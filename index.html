@@ -1,0 +1,2094 @@
+<!DOCTYPE html>
+<html lang="ru" class="h-full">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>SIM DROP</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            md3: {
+              primary: '#9CD67D',
+              onPrimary: '#0C3900',
+              primaryContainer: '#205107',
+              onPrimaryContainer: '#B7F397',
+              secondary: '#BDC9B0',
+              onSecondary: '#283421',
+              secondaryContainer: '#3E4A36',
+              onSecondaryContainer: '#D9E6CC',
+              tertiary: '#A0CFD0',
+              onTertiary: '#003738',
+              tertiaryContainer: '#1E4E4F',
+              onTertiaryContainer: '#BCEBEB',
+              error: '#FFB4AB',
+              onError: '#690005',
+              errorContainer: '#93000A',
+              onErrorContainer: '#FFDAD6',
+              background: '#10140F',
+              onBackground: '#E2E3DC',
+              surface: '#10140F',
+              onSurface: '#E2E3DC',
+              surfaceVariant: '#43483E',
+              onSurfaceVariant: '#C3C8BB',
+              outline: '#8D9386',
+              surfaceContainer: '#1C211B',
+              surfaceContainerHigh: '#272B25',
+              surfaceContainerHighest: '#32362F'
+            }
+          },
+          borderRadius: {
+            'md3-sm': '8px',
+            'md3-md': '12px',
+            'md3-lg': '16px',
+            'md3-xl': '28px',
+            'md3-full': '9999px'
+          },
+          boxShadow: {
+            'elevation-1': '0px 1px 3px 1px rgba(0,0,0,0.4), 0px 1px 2px 0px rgba(0,0,0,0.3)',
+            'elevation-2': '0px 2px 6px 2px rgba(0,0,0,0.4), 0px 1px 2px 0px rgba(0,0,0,0.3)',
+            'elevation-3': '0px 4px 8px 3px rgba(0,0,0,0.4), 0px 1px 3px 0px rgba(0,0,0,0.3)'
+          }
+        }
+      }
+    };
+  </script>
+  <style>
+    * {
+      -webkit-tap-highlight-color: transparent;
+      box-sizing: border-box;
+      touch-action: manipulation;
+    }
+    html, body {
+      width: 100%;
+      height: 100%;
+      background-color: #10140F;
+      color: #E2E3DC;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      user-select: none;
+      -webkit-user-select: none;
+      overflow-x: hidden;
+    }
+
+    .state-layer {
+      position: relative;
+      overflow: hidden;
+      transition: background-color 0.2s ease, transform 0.15s ease, opacity 0.15s ease;
+    }
+    .state-layer:active {
+      transform: scale(0.97);
+    }
+    .state-layer::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-color: currentColor;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s ease;
+    }
+    .state-layer:hover::after {
+      opacity: 0.08;
+    }
+    .state-layer:active::after {
+      opacity: 0.16;
+    }
+
+    @keyframes autoHideSplash {
+      0%, 80% { opacity: 1; pointer-events: auto; }
+      100% { opacity: 0; pointer-events: none; visibility: hidden; }
+    }
+    #splashScreen.failsafe-run {
+      animation: autoHideSplash 0.75s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+
+    body.mode-pc .mobile-nav-bar { display: none !important; }
+    body.mode-pc .desktop-nav-bar { display: block !important; }
+    body.mode-pc main { padding-bottom: 2rem !important; }
+
+    body.mode-mobile .desktop-nav-bar { display: none !important; }
+    body.mode-mobile .mobile-nav-bar { display: flex !important; }
+    body.mode-mobile main { padding-bottom: 6.5rem !important; }
+
+    .safe-bottom {
+      padding-bottom: max(0.75rem, env(safe-area-inset-bottom));
+    }
+
+    .rarity-common { border-color: #72796E; background: linear-gradient(145deg, #181D17, #131712); color: #C3C8BB; }
+    .rarity-bronze { border-color: #D68F55; background: linear-gradient(145deg, #2D1E13, #1B120B); color: #F8BC8A; }
+    .rarity-silver { border-color: #A3B5CA; background: linear-gradient(145deg, #18232D, #0F161C); color: #D7E3F0; }
+    .rarity-gold { border-color: #ECC758; background: linear-gradient(145deg, #2D250C, #1A1506); color: #FFE885; box-shadow: 0 0 12px rgba(236,199,88,0.25); }
+    .rarity-platinum { border-color: #4FE1E8; background: linear-gradient(145deg, #0A2629, #051618); color: #84F3F8; box-shadow: 0 0 14px rgba(79,225,232,0.3); }
+    .rarity-diamond { border-color: #D397FF; background: linear-gradient(145deg, #291538, #160A20); color: #E8C4FF; box-shadow: 0 0 18px rgba(211,151,255,0.35); }
+    .rarity-sheikh { border-color: #FF547D; background: linear-gradient(145deg, #370B18, #1E030B); color: #FFA6BC; box-shadow: 0 0 22px rgba(255,84,125,0.45); }
+
+    ::-webkit-scrollbar { width: 5px; height: 5px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: #32362F; border-radius: 9999px; }
+    ::-webkit-scrollbar-thumb:hover { background: #9CD67D; }
+
+    .odometer-digit-box {
+      width: 26px;
+      height: 38px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background: #0B0F0A;
+      border: 1px solid #43483E;
+      border-radius: 8px;
+      font-weight: 800;
+      color: #9CD67D;
+      box-shadow: inset 0 2px 4px rgba(0,0,0,0.6);
+      transition: all 0.12s ease-out;
+    }
+    .odometer-digit-box.locked {
+      background: #205107;
+      color: #B7F397;
+      border-color: #9CD67D;
+      transform: scale(1.05);
+      box-shadow: 0 0 12px rgba(156,214,125,0.45);
+    }
+  </style>
+</head>
+<body class="mode-pc flex flex-col min-h-screen">
+
+  <!-- ========================================== -->
+  <!-- 0. FAILSAFE PRELOADER                      -->
+  <!-- ========================================== -->
+  <div id="splashScreen" class="failsafe-run fixed inset-0 z-[9999] bg-[#10140F] flex flex-col items-center justify-center p-6 select-none transition-opacity duration-300">
+    <div class="flex flex-col items-center gap-4 text-center max-w-xs">
+      <div class="relative w-16 h-16 rounded-md3-lg bg-[#1C211B] border-2 border-[#9CD67D] flex items-center justify-center shadow-[0_0_24px_rgba(156,214,125,0.35)]">
+        <svg class="w-9 h-9 text-[#9CD67D] animate-pulse" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="4" y="2" width="16" height="20" rx="3"></rect>
+          <path d="M8 6h4"></path>
+          <path d="M8 10h8"></path>
+          <path d="M8 14h6"></path>
+        </svg>
+      </div>
+      <div>
+        <h1 class="text-2xl font-black tracking-tight text-white">SIM DROP</h1>
+        <p class="text-xs text-[#9CD67D] font-mono mt-0.5">Честная Экономика (RTP 82%)</p>
+      </div>
+      <div class="w-48 h-1.5 bg-[#1C211B] rounded-full overflow-hidden border border-[#43483E]">
+        <div class="h-full bg-[#9CD67D] rounded-full w-4/5 animate-pulse"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- 0.1 DEVICE SELECTION DIALOG                -->
+  <!-- ========================================== -->
+  <div id="deviceModal" class="fixed inset-0 z-[9990] bg-black/80 backdrop-blur-md hidden flex items-center justify-center p-4">
+    <div class="bg-[#1C211B] w-full max-w-md rounded-md3-xl p-6 sm:p-7 border border-[#43483E] shadow-elevation-3 flex flex-col gap-5 text-center">
+      <div class="flex flex-col items-center gap-2">
+        <div class="w-12 h-12 rounded-md3-lg bg-[#205107] text-[#9CD67D] flex items-center justify-center shadow-elevation-1">
+          <svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="4" y="4" width="16" height="16" rx="2"></rect>
+            <path d="M9 20h6"></path>
+            <path d="M12 4v16"></path>
+          </svg>
+        </div>
+        <h2 class="text-xl font-bold text-white">Какой у вас тип устройства?</h2>
+        <p class="text-xs text-[#C3C8BB]">Выберите интерфейс для наилучшей отзывчивости управления</p>
+      </div>
+
+      <div class="grid grid-cols-2 gap-3.5">
+        <button id="deviceSelectPhone" class="state-layer p-4 rounded-md3-lg bg-[#272B25] border-2 border-transparent hover:border-[#9CD67D] flex flex-col items-center gap-3 cursor-pointer text-left">
+          <div class="w-12 h-12 rounded-md3-md bg-[#10140F] border border-[#43483E] flex items-center justify-center text-[#9CD67D]">
+            <svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="6" y="2" width="12" height="20" rx="3"></rect>
+              <line x1="11" y1="18" x2="13" y2="18"></line>
+            </svg>
+          </div>
+          <div>
+            <div class="font-bold text-sm text-white">Телефон</div>
+            <div class="text-[10px] text-[#C3C8BB] mt-0.5 leading-snug">Нижняя панель, мобильные свайпы</div>
+          </div>
+        </button>
+
+        <button id="deviceSelectPc" class="state-layer p-4 rounded-md3-lg bg-[#272B25] border-2 border-[#9CD67D] flex flex-col items-center gap-3 cursor-pointer text-left">
+          <div class="w-12 h-12 rounded-md3-md bg-[#10140F] border border-[#43483E] flex items-center justify-center text-[#9CD67D]">
+            <svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="2" y="3" width="20" height="14" rx="2"></rect>
+              <line x1="8" y1="21" x2="16" y2="21"></line>
+              <line x1="12" y1="17" x2="12" y2="21"></line>
+            </svg>
+          </div>
+          <div>
+            <div class="font-bold text-sm text-white">ПК / Ноутбук</div>
+            <div class="text-[10px] text-[#C3C8BB] mt-0.5 leading-snug">Горячие клавиши [Пробел], [1-7]</div>
+          </div>
+        </button>
+      </div>
+
+      <button id="confirmDeviceBtn" class="state-layer w-full py-3 rounded-md3-full bg-[#9CD67D] hover:bg-[#b0e892] text-[#0C3900] font-bold text-xs uppercase tracking-wider cursor-pointer shadow-elevation-1">
+        Продолжить
+      </button>
+    </div>
+  </div>
+
+  <canvas id="fxCanvas" class="fixed inset-0 pointer-events-none z-50 w-full h-full"></canvas>
+
+  <!-- ========================================== -->
+  <!-- 1. LIVE DROPS FEED STRIP                   -->
+  <!-- ========================================== -->
+  <div class="bg-[#181D17] border-b border-[#43483E]/40 h-10 px-3 flex items-center gap-3 overflow-hidden select-none shrink-0">
+    <div class="flex items-center gap-1.5 shrink-0 pr-2 border-r border-[#43483E]/60">
+      <span class="w-2 h-2 rounded-full bg-[#9CD67D] animate-ping"></span>
+      <span class="text-[10px] font-mono font-bold tracking-wider text-[#9CD67D]">LIVE</span>
+    </div>
+    <div id="liveFeedContainer" class="flex items-center gap-2 overflow-x-hidden whitespace-nowrap py-1"></div>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- 2. APP BAR (HEADER)                        -->
+  <!-- ========================================== -->
+  <header class="bg-[#1C211B] border-b border-[#43483E]/50 px-3 sm:px-6 py-2.5 shrink-0 sticky top-0 z-40 shadow-elevation-1">
+    <div class="max-w-6xl mx-auto flex items-center justify-between gap-3">
+      <div class="flex items-center gap-2 cursor-pointer" onclick="switchTab('tab-cases')">
+        <div class="w-8 h-8 rounded-md3-md bg-[#205107] border border-[#9CD67D] flex items-center justify-center text-[#9CD67D]">
+          <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="4" y="2" width="16" height="20" rx="3"></rect>
+            <path d="M8 7h8"></path>
+            <path d="M8 12h5"></path>
+          </svg>
+        </div>
+        <div>
+          <span class="font-black text-sm sm:text-base tracking-tight text-white">SIM DROP</span>
+          <span class="hidden sm:inline-block ml-1 text-[9px] font-mono px-2 py-0.5 rounded-md3-full bg-[#205107] text-[#B7F397] font-bold">RTP 82%</span>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-2 sm:gap-3">
+        <div class="bg-[#272B25] px-3 sm:px-4 py-1 rounded-md3-full border border-[#43483E] flex items-center gap-2 shadow-elevation-1">
+          <span class="text-[#9CD67D] font-bold text-sm">₽</span>
+          <div class="flex flex-col text-left">
+            <span class="text-[8px] uppercase tracking-wider text-[#C3C8BB] font-semibold leading-none">Баланс</span>
+            <span id="playerBalance" class="font-mono font-black text-xs sm:text-sm text-white leading-tight">500 ₽</span>
+          </div>
+          <button id="openDailyGiftBtn" title="Ежедневный бонус" class="state-layer ml-1 w-6 h-6 rounded-md3-full bg-[#9CD67D] text-[#0C3900] flex items-center justify-center font-black text-xs hover:bg-[#b0e892] cursor-pointer">🎁</button>
+        </div>
+
+        <button id="deviceToggleBtn" title="Сменить интерфейс (ПК / Телефон)" class="state-layer h-8 px-2.5 rounded-md3-full bg-[#272B25] border border-[#43483E] text-[#C3C8BB] hover:text-white text-xs font-semibold flex items-center gap-1.5 cursor-pointer">
+          <span id="deviceIcon">🖥️</span>
+          <span id="deviceLabel" class="text-[10px] font-mono font-bold hidden sm:inline">ПК</span>
+        </button>
+
+        <button id="fastSpinToggle" title="Турбо-режим" class="state-layer h-8 px-2.5 rounded-md3-full bg-[#272B25] border border-[#43483E] text-[#C3C8BB] text-xs font-semibold flex items-center gap-1 cursor-pointer">
+          <span>⚡</span>
+          <span class="hidden sm:inline text-[11px]">Турбо</span>
+        </button>
+
+        <button id="soundToggle" title="Звуки" class="state-layer w-8 h-8 rounded-md3-full bg-[#272B25] border border-[#43483E] text-[#C3C8BB] hover:text-white flex items-center justify-center text-xs cursor-pointer">
+          <span id="soundIcon">🔊</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- ========================================== -->
+  <!-- 3. DESKTOP TABS NAVIGATION                -->
+  <!-- ========================================== -->
+  <nav class="desktop-nav-bar bg-[#181D17] border-b border-[#43483E]/40 px-4 hidden">
+    <div class="max-w-6xl mx-auto flex items-center gap-1 overflow-x-auto">
+      <button class="nav-tab-btn active px-3.5 py-2.5 border-b-2 border-[#9CD67D] text-[#9CD67D] font-bold text-xs flex items-center gap-1.5 cursor-pointer" data-target="tab-cases">
+        <span>📦 Кейсы</span>
+        <span class="pc-hotkey text-[9px] px-1 bg-black/40 text-[#C3C8BB] rounded font-mono">[1]</span>
+      </button>
+      <button class="nav-tab-btn px-3.5 py-2.5 border-b-2 border-transparent text-[#C3C8BB] hover:text-white font-semibold text-xs flex items-center gap-1.5 cursor-pointer" data-target="tab-odometer">
+        <span>📟 Барабан</span>
+        <span class="pc-hotkey text-[9px] px-1 bg-black/40 text-[#C3C8BB] rounded font-mono">[2]</span>
+      </button>
+      <button class="nav-tab-btn px-3.5 py-2.5 border-b-2 border-transparent text-[#C3C8BB] hover:text-white font-semibold text-xs flex items-center gap-1.5 cursor-pointer" data-target="tab-battles">
+        <span>⚔️ Батлы 1v1</span>
+        <span class="pc-hotkey text-[9px] px-1 bg-black/40 text-[#C3C8BB] rounded font-mono">[3]</span>
+      </button>
+      <button class="nav-tab-btn px-3.5 py-2.5 border-b-2 border-transparent text-[#C3C8BB] hover:text-white font-semibold text-xs flex items-center gap-1.5 cursor-pointer" data-target="tab-contracts">
+        <span>📑 Контракты</span>
+        <span class="pc-hotkey text-[9px] px-1 bg-black/40 text-[#C3C8BB] rounded font-mono">[4]</span>
+      </button>
+      <button class="nav-tab-btn px-3.5 py-2.5 border-b-2 border-transparent text-[#C3C8BB] hover:text-white font-semibold text-xs flex items-center gap-1.5 cursor-pointer" data-target="tab-upgrader">
+        <span>⚡ Апгрейдер</span>
+        <span class="pc-hotkey text-[9px] px-1 bg-black/40 text-[#C3C8BB] rounded font-mono">[5]</span>
+      </button>
+      <button class="nav-tab-btn px-3.5 py-2.5 border-b-2 border-transparent text-[#C3C8BB] hover:text-white font-semibold text-xs flex items-center gap-1.5 cursor-pointer" data-target="tab-vault">
+        <span>🗄️ Сейф (<span id="desktopVaultCount">0</span>)</span>
+        <span class="pc-hotkey text-[9px] px-1 bg-black/40 text-[#C3C8BB] rounded font-mono">[6]</span>
+      </button>
+      <button class="nav-tab-btn px-3.5 py-2.5 border-b-2 border-transparent text-[#C3C8BB] hover:text-white font-semibold text-xs flex items-center gap-1.5 cursor-pointer" data-target="tab-shop">
+        <span>📈 Бизнес</span>
+        <span class="pc-hotkey text-[9px] px-1 bg-black/40 text-[#C3C8BB] rounded font-mono">[7]</span>
+      </button>
+    </div>
+  </nav>
+
+  <!-- ========================================== -->
+  <!-- MAIN WORKSPACE                             -->
+  <!-- ========================================== -->
+  <main class="flex-1 max-w-6xl w-full mx-auto p-3 sm:p-5 flex flex-col">
+
+    <!-- TAB 1: CASES -->
+    <div id="tab-cases" class="tab-pane flex flex-col gap-5">
+      <div class="bg-[#1C211B] rounded-md3-xl p-4 sm:p-5 border border-[#43483E]/60 shadow-elevation-2 flex flex-col gap-4">
+        <div class="flex flex-wrap items-center justify-between gap-2 border-b border-[#43483E]/40 pb-3">
+          <div class="flex items-center gap-3">
+            <span id="activeCaseIcon" class="text-3xl">📦</span>
+            <div>
+              <h2 id="activeCaseTitle" class="text-base sm:text-lg font-black text-white">Кейс: Дворовый</h2>
+              <p id="activeCaseSubtitle" class="text-[11px] text-[#C3C8BB]">Минус 73%, Окуп 18%, Джекпот 1.5%</p>
+            </div>
+          </div>
+          <div class="flex items-center gap-2">
+            <span class="text-xs text-[#C3C8BB]">Цена открытия:</span>
+            <span id="activeCasePriceTag" class="text-sm font-mono font-black text-[#9CD67D] px-3 py-1 rounded-md3-full bg-[#205107]">100 ₽</span>
+          </div>
+        </div>
+
+        <!-- CS:GO Roulette Viewport -->
+        <div id="rouletteViewport" class="relative w-full h-32 sm:h-36 bg-[#0B0F0A] rounded-md3-lg border border-[#43483E] overflow-hidden select-none">
+          <div class="absolute inset-y-0 left-1/2 -translate-x-1/2 z-30 pointer-events-none flex flex-col items-center justify-between py-1">
+            <div class="w-3.5 h-3.5 bg-red-500 rotate-45 shadow-[0_0_8px_#ff0033]"></div>
+            <div class="w-0.5 h-full bg-red-500 shadow-[0_0_10px_#ff0033]"></div>
+            <div class="w-3.5 h-3.5 bg-red-500 rotate-45 shadow-[0_0_8px_#ff0033]"></div>
+          </div>
+          <div id="rouletteTrack" class="flex items-center gap-2 h-full px-4 absolute left-0 top-0 transition-transform will-change-transform"></div>
+        </div>
+
+        <div class="flex flex-col sm:flex-row items-center justify-between gap-3 pt-1">
+          <div class="text-[11px] text-[#C3C8BB] flex items-center gap-1.5">
+            <span class="w-2 h-2 rounded-full bg-[#9CD67D]"></span>
+            <span id="activeCaseOddsSummary">Честный RTP 82%: 73% открытий выпадают в минус (0.35x-0.65x)</span>
+          </div>
+          <button id="openCaseBtn" class="state-layer w-full sm:w-auto px-8 py-3 rounded-md3-full bg-[#9CD67D] hover:bg-[#b0e892] disabled:opacity-40 text-[#0C3900] font-black text-sm tracking-wider uppercase shadow-elevation-1 cursor-pointer flex items-center justify-center gap-2">
+            <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+            </svg>
+            <span>ОТКРЫТЬ (100 ₽)</span>
+          </button>
+        </div>
+      </div>
+
+      <div>
+        <div class="flex items-center justify-between mb-3">
+          <h3 class="text-sm font-extrabold text-white uppercase tracking-wider">Каталог Кейсов (9)</h3>
+          <span class="text-[11px] text-[#C3C8BB]">Кликните для выбора кейса</span>
+        </div>
+        <div id="casesListGrid" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 gap-3"></div>
+      </div>
+    </div>
+
+    <!-- TAB 2: FAST DIGITAL DRUM (ODOMETER) -->
+    <div id="tab-odometer" class="tab-pane hidden flex flex-col gap-4">
+      <div class="bg-[#1C211B] rounded-md3-xl p-4 sm:p-5 border border-[#43483E]/60 shadow-elevation-2 flex flex-col gap-4">
+        <div class="flex flex-wrap items-center justify-between gap-2 border-b border-[#43483E]/40 pb-3">
+          <div>
+            <h2 class="text-base sm:text-lg font-black text-white">📟 Скоростной Цифровой Барабан</h2>
+            <p class="text-[11px] text-[#C3C8BB]">Выигрыш строго пропорционален выбранной ставке (без миллионов из воздуха)</p>
+          </div>
+          <div class="flex items-center gap-1.5" id="odometerCountrySelector"></div>
+        </div>
+
+        <div class="bg-[#0B0F0A] rounded-md3-lg p-5 border border-[#43483E] flex flex-col items-center justify-center gap-4 text-center">
+          <div class="flex items-center gap-2 text-xs font-mono text-[#9CD67D]">
+            <span class="w-2 h-2 rounded-full bg-[#9CD67D] animate-ping"></span>
+            <span id="odometerLiveStatus">СОЕДИНЕНИЕ ГОТОВО</span>
+          </div>
+
+          <div id="odometerDisplayLine" class="flex flex-wrap items-center justify-center gap-1 sm:gap-1.5 py-2"></div>
+
+          <div class="flex flex-col items-center gap-1">
+            <span id="odometerPatternDesc" class="text-xs text-[#C3C8BB]">Нажмите «Крутить барабан»</span>
+            <span id="odometerPriceDisplay" class="font-mono text-base font-black text-[#9CD67D]">0 ₽</span>
+          </div>
+        </div>
+
+        <div class="flex flex-col sm:flex-row items-center justify-between gap-3 pt-1">
+          <div class="flex items-center gap-2">
+            <span class="text-xs text-[#C3C8BB]">Ставка:</span>
+            <div id="odometerBetButtons" class="flex items-center gap-1"></div>
+          </div>
+          <button id="odometerSpinBtn" class="state-layer w-full sm:w-auto px-8 py-3 rounded-md3-full bg-[#9CD67D] hover:bg-[#b0e892] disabled:opacity-40 text-[#0C3900] font-black text-xs sm:text-sm tracking-wider uppercase shadow-elevation-1 cursor-pointer flex items-center justify-center gap-2">
+            <span>КРУТИТЬ БАРАБАН (50 ₽)</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 3: CASE BATTLES 1v1 -->
+    <div id="tab-battles" class="tab-pane hidden flex flex-col gap-4">
+      <div class="bg-[#1C211B] rounded-md3-xl p-4 sm:p-5 border border-[#43483E]/60 shadow-elevation-2 flex flex-col gap-4">
+        <div>
+          <h2 class="text-base sm:text-lg font-black text-white">⚔️ Кейс-Батл 1v1 против Бота</h2>
+          <p class="text-[11px] text-[#C3C8BB]">Честная вероятность для обоих игроков. Победитель по сумме дропа забирает всё!</p>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 bg-[#0B0F0A] p-4 rounded-md3-lg border border-[#43483E]">
+          <div class="flex flex-col items-center text-center p-3 rounded-md3-md bg-[#181D17] border border-[#43483E]/50">
+            <span class="text-2xl">😎</span>
+            <span class="text-xs font-bold text-white mt-1">Вы</span>
+            <span id="battlePlayerScore" class="text-lg font-mono font-black text-[#9CD67D] mt-1">0 ₽</span>
+            <div id="battlePlayerCards" class="w-full flex flex-col gap-1.5 mt-2 min-h-[90px]"></div>
+          </div>
+          <div class="flex flex-col items-center text-center p-3 rounded-md3-md bg-[#181D17] border border-[#43483E]/50">
+            <span class="text-2xl">🤖</span>
+            <span class="text-xs font-bold text-white mt-1">Бот-Мажор</span>
+            <span id="battleBotScore" class="text-lg font-mono font-black text-red-400 mt-1">0 ₽</span>
+            <div id="battleBotCards" class="w-full flex flex-col gap-1.5 mt-2 min-h-[90px]"></div>
+          </div>
+        </div>
+
+        <div class="flex flex-col sm:flex-row items-center justify-between gap-3">
+          <div class="flex items-center gap-2 text-xs">
+            <span class="text-[#C3C8BB]">Кейс для батла:</span>
+            <select id="battleCaseSelect" class="bg-[#272B25] text-white border border-[#43483E] rounded-md3-sm px-2.5 py-1.5 text-xs font-semibold focus:outline-none focus:border-[#9CD67D]"></select>
+          </div>
+          <button id="startBattleBtn" class="state-layer w-full sm:w-auto px-6 py-2.5 rounded-md3-full bg-[#9CD67D] hover:bg-[#b0e892] text-[#0C3900] font-black text-xs uppercase tracking-wider shadow-elevation-1 cursor-pointer">
+            Начать Батл
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 4: TRADE-UP CONTRACTS -->
+    <div id="tab-contracts" class="tab-pane hidden flex flex-col gap-4">
+      <div class="bg-[#1C211B] rounded-md3-xl p-4 sm:p-5 border border-[#43483E]/60 shadow-elevation-2 flex flex-col gap-4">
+        <div>
+          <h2 class="text-base sm:text-lg font-black text-white">📑 Контракты Обмена (Trade-Up)</h2>
+          <p class="text-[11px] text-[#C3C8BB]">Стоимость нового номера = сумма вложенных номеров × (0.85 – 1.30)</p>
+        </div>
+
+        <div id="contractSlotsContainer" class="grid grid-cols-3 sm:grid-cols-5 gap-2.5 py-2"></div>
+
+        <div class="flex flex-col sm:flex-row items-center justify-between gap-3 border-t border-[#43483E]/40 pt-3">
+          <div class="text-xs text-[#C3C8BB]">
+            Выбрано номеров: <b id="contractCountText" class="text-white">0 / 5</b>
+          </div>
+          <button id="executeContractBtn" disabled class="state-layer w-full sm:w-auto px-6 py-2.5 rounded-md3-full bg-[#9CD67D] hover:bg-[#b0e892] disabled:opacity-40 text-[#0C3900] font-black text-xs uppercase tracking-wider shadow-elevation-1 cursor-pointer">
+            Подписать Контракт
+          </button>
+        </div>
+
+        <div class="flex flex-col gap-2 mt-2">
+          <span class="text-xs font-bold text-white uppercase tracking-wider">Выберите номера из сейфа:</span>
+          <div id="contractAvailableList" class="grid grid-cols-2 sm:grid-cols-4 gap-2 max-h-56 overflow-y-auto pr-1"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 5: UPGRADER -->
+    <div id="tab-upgrader" class="tab-pane hidden flex flex-col gap-4">
+      <div class="bg-[#1C211B] rounded-md3-xl p-4 sm:p-5 border border-[#43483E]/60 shadow-elevation-2 flex flex-col gap-5">
+        <div>
+          <h2 class="text-base sm:text-lg font-black text-white">⚡ Апгрейдер Номеров</h2>
+          <p class="text-[11px] text-[#C3C8BB]">Победа строго равна: стоимость номера × множитель (X × M)</p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-5 items-center">
+          <div class="relative flex flex-col items-center justify-center p-4 bg-[#0B0F0A] rounded-md3-lg border border-[#43483E]">
+            <div class="absolute top-2 left-1/2 -translate-x-1/2 z-20 pointer-events-none drop-shadow-[0_2px_8px_rgba(255,84,125,0.7)]">
+              <svg class="w-5 h-6 text-red-500" viewBox="0 0 20 24" fill="currentColor">
+                <polygon points="10,24 0,0 20,0" />
+              </svg>
+            </div>
+            <canvas id="upgraderWheelCanvas" width="280" height="280" class="max-w-[240px] sm:max-w-[260px] aspect-square"></canvas>
+            <div id="upgraderChanceLabel" class="mt-2 text-xs font-mono font-bold text-[#9CD67D]">Шанс: 41.0% (x2.0)</div>
+          </div>
+
+          <div class="flex flex-col gap-3">
+            <span class="text-xs font-bold text-white uppercase tracking-wider">Жертвуемый номер:</span>
+            <div id="upgraderTargetSlot" class="state-layer p-3 rounded-md3-md bg-[#272B25] border border-[#43483E] flex items-center justify-between cursor-pointer hover:border-[#9CD67D]">
+              <span class="text-xs text-[#C3C8BB]">Нажмите, чтобы выбрать номер из сейфа</span>
+              <span class="text-xs text-[#9CD67D] font-bold">Выбрать ➔</span>
+            </div>
+
+            <span class="text-xs font-bold text-white uppercase tracking-wider mt-1">Множитель:</span>
+            <div id="upgraderMultipliersRow" class="grid grid-cols-3 sm:grid-cols-4 gap-1.5"></div>
+
+            <button id="startUpgradeBtn" disabled class="state-layer mt-2 w-full py-3 rounded-md3-full bg-[#9CD67D] hover:bg-[#b0e892] disabled:opacity-40 text-[#0C3900] font-black text-xs uppercase tracking-wider shadow-elevation-1 cursor-pointer">
+              Крутить Апгрейд
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 6: VAULT -->
+    <div id="tab-vault" class="tab-pane hidden flex flex-col gap-4">
+      <div class="bg-[#1C211B] rounded-md3-xl p-4 sm:p-5 border border-[#43483E]/60 shadow-elevation-2 flex flex-col gap-4">
+        <div class="flex flex-wrap items-center justify-between gap-3 border-b border-[#43483E]/40 pb-3">
+          <div>
+            <h2 class="text-base sm:text-lg font-black text-white">🗄️ Личный Сейф Номеров</h2>
+            <p class="text-[11px] text-[#C3C8BB]">Все сохраненные номера можно продать в любой момент</p>
+          </div>
+          <div class="flex items-center gap-2">
+            <button id="sellAllCommonBtn" class="state-layer px-3 py-1.5 rounded-md3-full bg-[#272B25] hover:bg-[#32362F] border border-[#43483E] text-xs font-bold text-[#C3C8BB] cursor-pointer">
+              Продать обычные
+            </button>
+            <button id="sellAllVaultBtn" class="state-layer px-3.5 py-1.5 rounded-md3-full bg-[#93000A] hover:bg-[#ba1a1a] text-white text-xs font-bold cursor-pointer">
+              Продать всё
+            </button>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-2 text-xs">
+          <span class="text-[#C3C8BB]">Фильтр редкости:</span>
+          <select id="vaultRarityFilter" class="bg-[#272B25] text-white border border-[#43483E] rounded-md3-sm px-2.5 py-1.5 text-xs font-semibold focus:outline-none">
+            <option value="all">Все ранги</option>
+            <option value="common">Обычные</option>
+            <option value="bronze">Бронзовые</option>
+            <option value="silver">Серебряные</option>
+            <option value="gold">Золотые</option>
+            <option value="platinum">Платиновые</option>
+            <option value="diamond">Бриллианты</option>
+            <option value="sheikh">Олигарх VIP</option>
+          </select>
+        </div>
+
+        <div id="vaultCardsGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3"></div>
+      </div>
+    </div>
+
+    <!-- TAB 7: BUSINESS -->
+    <div id="tab-shop" class="tab-pane hidden flex flex-col gap-4">
+      <div class="bg-[#1C211B] rounded-md3-xl p-4 sm:p-5 border border-[#43483E]/60 shadow-elevation-2 flex flex-col gap-4">
+        <div>
+          <h2 class="text-base sm:text-lg font-black text-white">📈 Бизнес и Улучшения</h2>
+          <p class="text-[11px] text-[#C3C8BB]">Сбалансированные инвестиции в пассивную добычу</p>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+          <div class="p-4 rounded-md3-lg bg-[#272B25] border border-[#43483E] flex flex-col justify-between gap-3">
+            <div>
+              <div class="flex items-center gap-2">
+                <span class="text-xl">🔋</span>
+                <h3 class="font-bold text-sm text-white">Серверная SIM-Ферма</h3>
+              </div>
+              <p class="text-[11px] text-[#C3C8BB] mt-1">Пассивный доход +2 ₽/сек за уровень (максимум 4 часа оффлайн).</p>
+              <div id="passiveLvlText" class="mt-2 text-xs font-mono font-bold text-[#9CD67D]">Уровень 0 (+0 ₽/сек)</div>
+            </div>
+            <button id="upgradePassiveBtn" class="state-layer w-full py-2.5 rounded-md3-full bg-[#205107] hover:bg-[#2e6d0d] text-[#B7F397] font-mono font-bold text-xs cursor-pointer">
+              Прокачать (<span id="passiveCostText">400 ₽</span>)
+            </button>
+          </div>
+
+          <div class="p-4 rounded-md3-lg bg-[#272B25] border border-[#43483E] flex flex-col justify-between gap-3">
+            <div>
+              <div class="flex items-center gap-2">
+                <span class="text-xl">💼</span>
+                <h3 class="font-bold text-sm text-white">VIP-Скупщик Номеров</h3>
+              </div>
+              <p class="text-[11px] text-[#C3C8BB] mt-1">Честный бонус к продаже номеров: +3% за уровень (до 30%).</p>
+              <div id="marketLvlText" class="mt-2 text-xs font-mono font-bold text-[#84F3F8]">Уровень 0 (+0%)</div>
+            </div>
+            <button id="upgradeMarketBtn" class="state-layer w-full py-2.5 rounded-md3-full bg-[#1E4E4F] hover:bg-[#286667] text-[#BCEBEB] font-mono font-bold text-xs cursor-pointer">
+              Прокачать (<span id="marketCostText">1,200 ₽</span>)
+            </button>
+          </div>
+
+          <div class="p-4 rounded-md3-lg bg-[#272B25] border border-[#43483E] flex flex-col justify-between gap-3">
+            <div>
+              <div class="flex items-center gap-2">
+                <span class="text-xl">🏷️</span>
+                <h3 class="font-bold text-sm text-white">Оптовая Скидка</h3>
+              </div>
+              <p class="text-[11px] text-[#C3C8BB] mt-1">Снижает стоимость кейсов на 2.5% за уровень (до 20%).</p>
+              <div id="discountLvlText" class="mt-2 text-xs font-mono font-bold text-[#FFE885]">Уровень 0 (0% скидка)</div>
+            </div>
+            <button id="upgradeDiscountBtn" class="state-layer w-full py-2.5 rounded-md3-full bg-[#3E4A36] hover:bg-[#4f5f45] text-[#D9E6CC] font-mono font-bold text-xs cursor-pointer">
+              Прокачать (<span id="discountCostText">2,500 ₽</span>)
+            </button>
+          </div>
+
+          <div class="p-4 rounded-md3-lg bg-[#272B25] border border-[#43483E] flex flex-col justify-between gap-3">
+            <div>
+              <div class="flex items-center gap-2">
+                <span class="text-xl">🆘</span>
+                <h3 class="font-bold text-sm text-white">Экспресс-Пособие</h3>
+              </div>
+              <p class="text-[11px] text-[#C3C8BB] mt-1">Если на балансе менее 50 ₽, государство выдает экстренную помощь.</p>
+              <div class="mt-2 text-xs font-mono text-red-400 font-bold">Страховка банкротства</div>
+            </div>
+            <button id="emergencyAidBtn" class="state-layer w-full py-2.5 rounded-md3-full border border-red-500/50 bg-[#93000A]/30 text-red-300 font-mono font-bold text-xs hover:bg-[#93000A]/50 cursor-pointer">
+              Получить +150 ₽
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- ========================================== -->
+  <!-- 4. MOBILE BOTTOM BAR                       -->
+  <!-- ========================================== -->
+  <nav class="mobile-nav-bar md:hidden fixed bottom-0 inset-x-0 bg-[#1C211B]/95 backdrop-blur-md border-t border-[#43483E]/60 px-1 py-1 z-40 flex items-center justify-around safe-bottom shadow-elevation-2">
+    <button class="mobile-nav-btn active flex flex-col items-center gap-0.5 text-[#9CD67D] flex-1 py-1 cursor-pointer" data-target="tab-cases">
+      <span class="text-sm">📦</span>
+      <span class="text-[9px] font-bold">Кейсы</span>
+    </button>
+    <button class="mobile-nav-btn flex flex-col items-center gap-0.5 text-[#C3C8BB] flex-1 py-1 cursor-pointer" data-target="tab-odometer">
+      <span class="text-sm">📟</span>
+      <span class="text-[9px] font-medium">Барабан</span>
+    </button>
+    <button class="mobile-nav-btn flex flex-col items-center gap-0.5 text-[#C3C8BB] flex-1 py-1 cursor-pointer" data-target="tab-battles">
+      <span class="text-sm">⚔️</span>
+      <span class="text-[9px] font-medium">Батлы</span>
+    </button>
+    <button class="mobile-nav-btn flex flex-col items-center gap-0.5 text-[#C3C8BB] flex-1 py-1 cursor-pointer" data-target="tab-contracts">
+      <span class="text-sm">📑</span>
+      <span class="text-[9px] font-medium">Обмен</span>
+    </button>
+    <button class="mobile-nav-btn flex flex-col items-center gap-0.5 text-[#C3C8BB] flex-1 py-1 cursor-pointer" data-target="tab-upgrader">
+      <span class="text-sm">⚡</span>
+      <span class="text-[9px] font-medium">Апгрейд</span>
+    </button>
+    <button class="mobile-nav-btn flex flex-col items-center gap-0.5 text-[#C3C8BB] flex-1 py-1 cursor-pointer" data-target="tab-vault">
+      <span class="text-sm">🗄️</span>
+      <span class="text-[9px] font-medium">Сейф</span>
+    </button>
+    <button class="mobile-nav-btn flex flex-col items-center gap-0.5 text-[#C3C8BB] flex-1 py-1 cursor-pointer" data-target="tab-shop">
+      <span class="text-sm">📈</span>
+      <span class="text-[9px] font-medium">Бизнес</span>
+    </button>
+  </nav>
+
+  <!-- ========================================== -->
+  <!-- 5. DROP RESULT DIALOG                      -->
+  <!-- ========================================== -->
+  <div id="dropResultModal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-md hidden flex items-center justify-center p-4">
+    <div class="bg-[#1C211B] w-full max-w-sm rounded-md3-xl p-5 sm:p-6 border border-[#43483E] shadow-elevation-3 flex flex-col items-center text-center gap-3.5">
+      <span id="dropResultBadge" class="px-3 py-0.5 rounded-md3-full text-[10px] font-mono font-bold uppercase border">
+        ЗОЛОТОЙ
+      </span>
+      <div class="w-full p-4 rounded-md3-md bg-[#0B0F0A] border border-[#43483E] flex flex-col items-center gap-1.5">
+        <div class="flex items-center gap-2 text-xs text-[#C3C8BB]">
+          <span id="dropResultFlag" class="text-xl">🇷🇺</span>
+          <span id="dropResultOperator" class="font-bold text-white">МТС VIP</span>
+        </div>
+        <div id="dropResultPhone" class="font-mono text-base sm:text-lg font-black text-[#9CD67D] tracking-wider my-1">
+          +7 (999) 777-77-77
+        </div>
+        <div id="dropResultPattern" class="text-[11px] text-[#C3C8BB]">Септа-монолит</div>
+        <div id="dropResultWorth" class="text-lg font-mono font-black text-white mt-1">125,000 ₽</div>
+      </div>
+
+      <div class="grid grid-cols-2 gap-2.5 w-full mt-1">
+        <button id="dropSellBtn" class="state-layer py-2.5 rounded-md3-full bg-[#272B25] hover:bg-[#32362F] border border-[#43483E] text-white font-bold text-xs uppercase cursor-pointer">
+          Продать
+        </button>
+        <button id="dropKeepBtn" class="state-layer py-2.5 rounded-md3-full bg-[#9CD67D] hover:bg-[#b0e892] text-[#0C3900] font-black text-xs uppercase cursor-pointer shadow-elevation-1">
+          В Сейф
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- 6. DAILY GIFT DIALOG                       -->
+  <!-- ========================================== -->
+  <div id="dailyGiftModal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-md hidden flex items-center justify-center p-4">
+    <div class="bg-[#1C211B] w-full max-w-sm rounded-md3-xl p-5 border border-[#43483E] shadow-elevation-3 flex flex-col gap-4">
+      <div class="flex items-center justify-between border-b border-[#43483E]/40 pb-2">
+        <div class="flex items-center gap-2">
+          <span class="text-xl">🎁</span>
+          <h3 class="font-bold text-sm text-white">Ежедневный Подарок</h3>
+        </div>
+        <button id="closeDailyGiftBtn" class="w-7 h-7 rounded-md3-full bg-[#272B25] text-[#C3C8BB] hover:text-white flex items-center justify-center font-bold text-xs cursor-pointer">✕</button>
+      </div>
+
+      <div class="p-3 bg-[#272B25] rounded-md3-md border border-[#43483E] flex flex-col gap-2 text-center">
+        <p class="text-xs text-[#C3C8BB]">Заходите каждый день и забирайте гарантированные деньги на счёт!</p>
+        <div class="flex items-center justify-between text-xs px-1 mt-1">
+          <span class="text-white font-bold">Статус подарка:</span>
+          <span id="dailyBonusStatusText" class="font-mono text-[#9CD67D] font-bold">ГОТОВ К ВЫДАЧЕ</span>
+        </div>
+        <button id="claimDailyBonusBtn" class="state-layer w-full py-2.5 rounded-md3-full bg-[#9CD67D] hover:bg-[#b0e892] text-[#0C3900] font-bold text-xs uppercase cursor-pointer shadow-elevation-1 mt-1">
+          Забрать +250 ₽
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div id="toastContainer" class="fixed top-12 right-3 left-3 sm:left-auto sm:right-4 z-50 flex flex-col gap-2 pointer-events-none max-w-sm ml-auto"></div>
+
+  <!-- ========================================== -->
+  <!-- 7. COMPLETE SCRIPT LOGIC (REBALANCED)      -->
+  <!-- ========================================== -->
+  <script>
+    const SafeStorage = {
+      memory: {},
+      isSupported: (function() {
+        try {
+          const k = '__test_simdrop__';
+          localStorage.setItem(k, '1');
+          localStorage.removeItem(k);
+          return true;
+        } catch (e) {
+          return false;
+        }
+      })(),
+      getItem(k) {
+        if (this.isSupported) {
+          try { return localStorage.getItem(k); } catch (e) { return this.memory[k] || null; }
+        }
+        return this.memory[k] || null;
+      },
+      setItem(k, v) {
+        if (this.isSupported) {
+          try { localStorage.setItem(k, v); return; } catch (e) {}
+        }
+        this.memory[k] = String(v);
+      }
+    };
+
+    function toggleModal(modalEl, show) {
+      if (show) {
+        modalEl.classList.remove('hidden');
+        document.body.style.overflow = 'hidden';
+      } else {
+        modalEl.classList.add('hidden');
+        const anyModalOpen = document.querySelectorAll('.fixed:not(#splashScreen):not(#deviceModal):not(.hidden)').length > 0;
+        if (!anyModalOpen) {
+          document.body.style.overflow = '';
+        }
+      }
+    }
+
+    function showToast(msg, type = 'info') {
+      const container = document.getElementById('toastContainer');
+      const toast = document.createElement('div');
+      const colors = {
+        success: 'border-[#9CD67D] text-[#B7F397] bg-[#205107]/90',
+        error: 'border-red-500 text-red-200 bg-[#93000A]/90',
+        info: 'border-[#84F3F8] text-[#BCEBEB] bg-[#1E4E4F]/90'
+      };
+      toast.className = `p-3 rounded-md3-md border text-xs font-medium shadow-elevation-2 backdrop-blur-md transition-all duration-300 pointer-events-auto transform translate-y-2 opacity-0 ${colors[type] || colors.info}`;
+      toast.textContent = msg;
+      container.appendChild(toast);
+      requestAnimationFrame(() => {
+        toast.classList.remove('translate-y-2', 'opacity-0');
+      });
+      setTimeout(() => {
+        toast.classList.add('opacity-0', '-translate-y-2');
+        setTimeout(() => toast.remove(), 300);
+      }, 2800);
+    }
+
+    /* Web Audio Engine */
+    class SoundEngine {
+      constructor() {
+        this.ctx = null;
+        this.enabled = true;
+      }
+      init() {
+        if (!this.ctx) {
+          const AudioCtx = window.AudioContext || window.webkitAudioContext;
+          if (AudioCtx) this.ctx = new AudioCtx();
+        }
+        if (this.ctx && this.ctx.state === 'suspended') {
+          this.ctx.resume().catch(() => {});
+        }
+      }
+      playTick() {
+        if (!this.enabled) return;
+        this.init();
+        if (!this.ctx) return;
+        try {
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+          osc.type = 'triangle';
+          osc.frequency.setValueAtTime(650, this.ctx.currentTime);
+          osc.frequency.exponentialRampToValueAtTime(180, this.ctx.currentTime + 0.04);
+          gain.gain.setValueAtTime(0.08, this.ctx.currentTime);
+          gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.04);
+          osc.connect(gain);
+          gain.connect(this.ctx.destination);
+          osc.start();
+          osc.stop(this.ctx.currentTime + 0.04);
+        } catch (e) {}
+      }
+      playFanfare(rank = 1) {
+        if (!this.enabled) return;
+        this.init();
+        if (!this.ctx) return;
+        try {
+          const notes = [261.6, 329.6, 392.0, 523.2, 659.2];
+          const count = Math.min(3 + rank, notes.length);
+          notes.slice(0, count).forEach((freq, i) => {
+            const osc = this.ctx.createOscillator();
+            const gain = this.ctx.createGain();
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(freq, this.ctx.currentTime + i * 0.08);
+            gain.gain.setValueAtTime(0.12, this.ctx.currentTime + i * 0.08);
+            gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + i * 0.08 + 0.25);
+            osc.connect(gain);
+            gain.connect(this.ctx.destination);
+            osc.start(this.ctx.currentTime + i * 0.08);
+            osc.stop(this.ctx.currentTime + i * 0.08 + 0.25);
+          });
+        } catch (e) {}
+      }
+      playFail() {
+        if (!this.enabled) return;
+        this.init();
+        if (!this.ctx) return;
+        try {
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+          osc.type = 'sawtooth';
+          osc.frequency.setValueAtTime(140, this.ctx.currentTime);
+          osc.frequency.linearRampToValueAtTime(65, this.ctx.currentTime + 0.28);
+          gain.gain.setValueAtTime(0.1, this.ctx.currentTime);
+          gain.gain.linearRampToValueAtTime(0.001, this.ctx.currentTime + 0.28);
+          osc.connect(gain);
+          gain.connect(this.ctx.destination);
+          osc.start();
+          osc.stop(this.ctx.currentTime + 0.28);
+        } catch (e) {}
+      }
+    }
+    const audio = new SoundEngine();
+    window.addEventListener('click', () => audio.init(), { once: true });
+    window.addEventListener('touchstart', () => audio.init(), { once: true });
+
+    /* Particle System */
+    const fxCanvas = document.getElementById('fxCanvas');
+    const fxCtx = fxCanvas.getContext('2d');
+    let particles = [];
+
+    function resizeCanvas() {
+      fxCanvas.width = window.innerWidth;
+      fxCanvas.height = window.innerHeight;
+    }
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas();
+
+    function spawnBurst(count = 45) {
+      const colors = ['#9CD67D', '#4FE1E8', '#FFE885', '#D397FF', '#FF547D'];
+      for (let i = 0; i < count; i++) {
+        particles.push({
+          x: fxCanvas.width / 2,
+          y: fxCanvas.height / 2,
+          vx: (Math.random() - 0.5) * 14,
+          vy: (Math.random() - 0.6) * 14,
+          color: colors[Math.floor(Math.random() * colors.length)],
+          size: Math.random() * 4 + 2,
+          life: 1.0,
+          decay: Math.random() * 0.02 + 0.015
+        });
+      }
+    }
+
+    function renderParticles() {
+      fxCtx.clearRect(0, 0, fxCanvas.width, fxCanvas.height);
+      for (let i = particles.length - 1; i >= 0; i--) {
+        const p = particles[i];
+        p.x += p.vx;
+        p.y += p.vy;
+        p.vy += 0.25;
+        p.life -= p.decay;
+        if (p.life <= 0) {
+          particles.splice(i, 1);
+          continue;
+        }
+        fxCtx.globalAlpha = p.life;
+        fxCtx.fillStyle = p.color;
+        fxCtx.beginPath();
+        fxCtx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+        fxCtx.fill();
+      }
+      fxCtx.globalAlpha = 1.0;
+      requestAnimationFrame(renderParticles);
+    }
+    renderParticles();
+
+    /* Countries */
+    const COUNTRIES = {
+      ru: { id: 'ru', flag: '🇷🇺', name: 'Россия', prefix: '+7', codes: ['999', '777', '900', '916'], operators: ['МТС VIP', 'Мегафон', 'Билайн'] },
+      ua: { id: 'ua', flag: '🇺🇦', name: 'Украина', prefix: '+380', codes: ['67', '50', '97', '73'], operators: ['Київстар', 'Vodafone', 'Lifecell'] },
+      kz: { id: 'kz', flag: '🇰🇿', name: 'Казахстан', prefix: '+7', codes: ['701', '777', '700', '775'], operators: ['Kcell Алтын', 'Beeline KZ'] },
+      ae: { id: 'ae', flag: '🇦🇪', name: 'ОАЭ (Дубай)', prefix: '+971', codes: ['50', '55', '52'], operators: ['Du Sheikh', 'Etisalat VIP'] },
+      by: { id: 'by', flag: '🇧🇾', name: 'Беларусь', prefix: '+375', codes: ['29', '44', '25'], operators: ['А1 Премиум', 'МТС БССР'] },
+      us: { id: 'us', flag: '🇺🇸', name: 'США', prefix: '+1', codes: ['212', '310', '702'], operators: ['AT&T Royal', 'Verizon USA'] }
+    };
+
+    /* Visual Rarities */
+    const RARITY = {
+      common: { id: 'common', name: 'Обычный', rank: 1, css: 'rarity-common' },
+      bronze: { id: 'bronze', name: 'Бронзовый', rank: 2, css: 'rarity-bronze' },
+      silver: { id: 'silver', name: 'Серебряный', rank: 3, css: 'rarity-silver' },
+      gold: { id: 'gold', name: 'Золотой', rank: 4, css: 'rarity-gold' },
+      platinum: { id: 'platinum', name: 'Платиновый', rank: 5, css: 'rarity-platinum' },
+      diamond: { id: 'diamond', name: 'Бриллиант', rank: 6, css: 'rarity-diamond' },
+      sheikh: { id: 'sheikh', name: 'Олигарх VIP', rank: 7, css: 'rarity-sheikh' }
+    };
+
+    /*
+      ======================================================
+      ТОЧНАЯ МАТЕМАТИКА ЭКОНОМИКИ (ЧЕСТНЫЙ RTP 82%)
+      ------------------------------------------------------
+      В ЛЮБОМ КЕЙСЕ (от 100₽ до 1.5M₽):
+      - 'loss'    (73%):  возврат 0.35x - 0.65x от цены открытия
+      - 'neutral' (17%):  возврат 0.90x - 1.30x (около окупа)
+      - 'profit'  (8.5%): возврат 2.00x - 3.50x (хороший окуп)
+      - 'jackpot' (1.5%): возврат 5.00x - 9.00x (максимум 10.0x, кап!)
+      
+      Для кейса 1.5M:
+      loss: 525k - 975k ₽ (73% случаев)
+      neutral: 1.35M - 1.95M ₽ (17% случаев)
+      profit: 3.0M - 5.25M ₽ (8.5% случаев)
+      jackpot: 7.5M - 13.5M ₽ (1.5% случаев, НИКАКИХ 50-100 МИЛЛИОНОВ!)
+      ======================================================
+    */
+    const CASES = [
+      { id: 'c1', name: 'Дворовый', price: 100, icon: '🪣', oddsText: 'Минус 73%, Окуп 17%, Прибыль 8.5%, Джекпот 1.5%', pool: ['ru', 'ua'] },
+      { id: 'c2', name: 'Студент', price: 350, icon: '🎓', oddsText: 'Минус 73%, Окуп 17%, Прибыль 8.5%, Джекпот 1.5%', pool: ['ru', 'ua', 'by'] },
+      { id: 'c3', name: 'Стартовый SIM', price: 1000, icon: '📦', oddsText: 'Минус 73%, Окуп 17%, Прибыль 8.5%, Джекпот 1.5%', pool: ['ru', 'ua', 'kz'] },
+      { id: 'c4', name: 'Регион-Мастер', price: 3500, icon: '🦅', oddsText: 'Минус 73%, Окуп 17%, Прибыль 8.5%, Джекпот 1.5%', pool: ['kz', 'ru', 'by'] },
+      { id: 'c5', name: 'Бизнес-Пак', price: 12000, icon: '💼', oddsText: 'Минус 73%, Окуп 17%, Прибыль 8.5%, Джекпот 1.5%', pool: ['ru', 'us'] },
+      { id: 'c6', name: 'VIP Премиум', price: 45000, icon: '💎', oddsText: 'Минус 73%, Окуп 17%, Прибыль 8.5%, Джекпот 1.5%', pool: ['ru', 'us', 'ae'] },
+      { id: 'c7', name: 'Крипто-Кит', price: 150000, icon: '🐳', oddsText: 'Минус 73%, Окуп 17%, Прибыль 8.5%, Джекпот 1.5%', pool: ['us', 'ae'] },
+      { id: 'c8', name: 'Шейх Дубай', price: 500000, icon: '🕌', oddsText: 'Минус 73%, Окуп 17%, Прибыль 8.5%, Джекпот 1.5%', pool: ['ae'] },
+      { id: 'c9', name: 'Олигарх Монолит', price: 1500000, icon: '👑', oddsText: 'Минус 73% (525k-975k), Окуп 17%, Прибыль 8.5%, Джекпот 1.5% (до 13.5M)', pool: ['ae', 'ru'] }
+    ];
+
+    /* Global State */
+    let STATE = {
+      deviceMode: 'pc',
+      balance: 500,
+      selectedCaseIdx: 0,
+      fastMode: false,
+      passiveLvl: 0,
+      marketLvl: 0,
+      discountLvl: 0,
+      inventory: [],
+      lastTimestamp: Date.now(),
+      lastDailyClaim: 0,
+      odometerCountry: 'ru',
+      odometerMult: 1,
+      contractSimIds: [],
+      upgraderSimId: null,
+      upgraderMultIdx: 1
+    };
+
+    function saveState() {
+      STATE.lastTimestamp = Date.now();
+      SafeStorage.setItem('SIM_DROP_STATE_PRO_V6', JSON.stringify(STATE));
+    }
+
+    function loadState() {
+      const raw = SafeStorage.getItem('SIM_DROP_STATE_PRO_V6');
+      if (raw) {
+        try {
+          const parsed = JSON.parse(raw);
+          if (typeof parsed.balance === 'number' && !isNaN(parsed.balance)) {
+            STATE = { ...STATE, ...parsed };
+          }
+        } catch (e) {}
+      }
+    }
+
+    /*
+      ГЕНЕРАТОР НОМЕРОВ С ЖЁСТКИМ МАТЕМАТИЧЕСКИМ РАСЧЁТОМ
+      category: 'loss' | 'neutral' | 'profit' | 'jackpot'
+    */
+    function rollOutcomeCategory() {
+      const r = Math.random() * 100;
+      if (r < 73.0) return 'loss';      // 73.0%
+      if (r < 90.0) return 'neutral';   // 17.0%
+      if (r < 98.5) return 'profit';    // 8.5%
+      return 'jackpot';                 // 1.5%
+    }
+
+    function generateSimByCost(baseCost, outcomeCategory, pool) {
+      const countryId = pool[Math.floor(Math.random() * pool.length)] || 'ru';
+      const c = COUNTRIES[countryId] || COUNTRIES.ru;
+      const op = c.operators[Math.floor(Math.random() * c.operators.length)];
+      const code = c.codes[Math.floor(Math.random() * c.codes.length)];
+
+      let ratio = 0.5;
+      let tierKey = 'common';
+      let pattern = 'Обычный абонент';
+      let digits = '';
+
+      if (outcomeCategory === 'loss') {
+        ratio = 0.35 + Math.random() * 0.30; // 0.35x - 0.65x
+        if (baseCost >= 150000) {
+          tierKey = 'platinum';
+          digits = '1234567';
+          pattern = '💠 Платина (минус-дроп хайролла)';
+        } else if (baseCost >= 12000) {
+          tierKey = 'silver';
+          digits = '4455660';
+          pattern = '🥈 Парный повтор';
+        } else {
+          tierKey = (Math.random() < 0.6) ? 'common' : 'bronze';
+          for (let i = 0; i < 7; i++) digits += Math.floor(Math.random() * 10).toString();
+          pattern = (tierKey === 'bronze') ? '🥉 Красивый хвост' : 'Обычный абонент';
+        }
+      } else if (outcomeCategory === 'neutral') {
+        ratio = 0.90 + Math.random() * 0.40; // 0.90x - 1.30x
+        if (baseCost >= 150000) {
+          tierKey = 'diamond';
+          digits = '8888882';
+          pattern = '💎 Бриллиант (около окупаемости)';
+        } else {
+          tierKey = 'silver';
+          digits = '7897890';
+          pattern = '🥈 Зеркальные тройки';
+        }
+      } else if (outcomeCategory === 'profit') {
+        ratio = 2.00 + Math.random() * 1.50; // 2.00x - 3.50x
+        if (baseCost >= 150000) {
+          tierKey = 'diamond';
+          digits = '9999991';
+          pattern = '💎 Элитный Бриллиант (хороший плюс)';
+        } else {
+          tierKey = 'gold';
+          digits = '7778899';
+          pattern = '🥇 Блатной набор 777-88-99';
+        }
+      } else { // jackpot
+        ratio = 5.00 + Math.random() * 4.00; // 5.00x - 9.00x (макс 10x)
+        tierKey = 'sheikh';
+        const d = (countryId === 'ae') ? '7' : Math.floor(Math.random() * 10).toString();
+        digits = d.repeat(7);
+        pattern = `👑 СЕПТА-МОНОЛИТ ${d.repeat(3)}-${d.repeat(2)}-${d.repeat(2)}`;
+      }
+
+      // VIP-скупщик дает строгий бонус: +3% за уровень, макс 30%
+      const marketBonus = 1 + Math.min(STATE.marketLvl * 0.03, 0.30);
+      const exactPrice = Math.max(15, Math.round(baseCost * ratio * marketBonus));
+
+      const formatted = `${c.prefix} (${code}) ${digits.slice(0,3)}-${digits.slice(3,5)}-${digits.slice(5,7)}`;
+      const tier = RARITY[tierKey] || RARITY.common;
+
+      return {
+        id: 'sim_' + Date.now() + '_' + Math.floor(Math.random() * 99999),
+        countryId,
+        flag: c.flag,
+        operator: op,
+        formatted,
+        tierKey,
+        tier,
+        pattern,
+        price: exactPrice
+      };
+    }
+
+    function getEffectiveCasePrice(c) {
+      const discount = Math.min(STATE.discountLvl * 0.025, 0.20);
+      return Math.round(c.price * (1 - discount));
+    }
+
+    function pushLive(sim) {
+      const container = document.getElementById('liveFeedContainer');
+      const item = document.createElement('div');
+      item.className = `inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md3-full border text-[10px] font-mono shadow-sm shrink-0 ${sim.tier.css}`;
+      item.innerHTML = `<span>${sim.flag}</span><span class="font-bold text-white">${sim.formatted}</span><span class="text-[#9CD67D] font-black">${sim.price.toLocaleString('ru-RU')}₽</span>`;
+      container.prepend(item);
+      if (container.children.length > 25) container.removeChild(container.lastChild);
+    }
+
+    function updateUI() {
+      document.getElementById('playerBalance').textContent = `${STATE.balance.toLocaleString('ru-RU')} ₽`;
+      document.getElementById('desktopVaultCount').textContent = STATE.inventory.length;
+
+      const passiveCost = Math.round(400 * Math.pow(1.9, STATE.passiveLvl));
+      const marketCost = Math.round(1200 * Math.pow(1.85, STATE.marketLvl));
+      const discountCost = Math.round(2500 * Math.pow(2.1, STATE.discountLvl));
+
+      document.getElementById('passiveCostText').textContent = `${passiveCost.toLocaleString('ru-RU')} ₽`;
+      document.getElementById('marketCostText').textContent = `${marketCost.toLocaleString('ru-RU')} ₽`;
+      document.getElementById('discountCostText').textContent = `${discountCost.toLocaleString('ru-RU')} ₽`;
+
+      document.getElementById('passiveLvlText').textContent = `Уровень ${STATE.passiveLvl} (+${STATE.passiveLvl * 2} ₽/сек)`;
+      document.getElementById('marketLvlText').textContent = `Уровень ${STATE.marketLvl} (+${Math.min(STATE.marketLvl * 3, 30)}%)`;
+      document.getElementById('discountLvlText').textContent = `Уровень ${STATE.discountLvl} (Скидка ${(Math.min(STATE.discountLvl * 2.5, 20)).toFixed(1)}%)`;
+    }
+
+    function switchTab(tabId) {
+      document.querySelectorAll('.tab-pane').forEach(p => p.classList.add('hidden'));
+      const target = document.getElementById(tabId);
+      if (target) target.classList.remove('hidden');
+
+      document.querySelectorAll('.nav-tab-btn, .mobile-nav-btn').forEach(btn => {
+        if (btn.dataset.target === tabId) {
+          btn.classList.add('active', 'text-[#9CD67D]', 'border-[#9CD67D]');
+          btn.classList.remove('text-[#C3C8BB]', 'border-transparent');
+        } else {
+          btn.classList.remove('active', 'text-[#9CD67D]', 'border-[#9CD67D]');
+          btn.classList.add('text-[#C3C8BB]', 'border-transparent');
+        }
+      });
+
+      if (tabId === 'tab-vault') renderVault();
+      if (tabId === 'tab-upgrader') syncUpgraderUI();
+      if (tabId === 'tab-contracts') syncContractsUI();
+    }
+
+    document.querySelectorAll('.nav-tab-btn, .mobile-nav-btn').forEach(btn => {
+      btn.onclick = () => switchTab(btn.dataset.target);
+    });
+
+    /* Case Roulette */
+    let isReelSpinning = false;
+    let pendingSim = null;
+
+    function renderCasesGrid() {
+      const grid = document.getElementById('casesListGrid');
+      grid.innerHTML = '';
+      CASES.forEach((c, idx) => {
+        const effectivePrice = getEffectiveCasePrice(c);
+        const card = document.createElement('div');
+        const isSelected = STATE.selectedCaseIdx === idx;
+        card.className = `state-layer p-3 rounded-md3-lg bg-[#272B25] border-2 cursor-pointer flex flex-col justify-between gap-2 shadow-elevation-1 ${
+          isSelected ? 'border-[#9CD67D] bg-[#32362F]' : 'border-[#43483E]/60 hover:border-[#9CD67D]'
+        }`;
+        card.innerHTML = `
+          <div class="flex items-center justify-between">
+            <span class="text-2xl">${c.icon}</span>
+            <span class="text-[10px] font-mono font-bold px-2 py-0.5 rounded-md3-full bg-[#205107] text-[#B7F397]">${effectivePrice.toLocaleString('ru-RU')} ₽</span>
+          </div>
+          <div>
+            <div class="text-xs font-bold text-white truncate">${c.name}</div>
+            <div class="text-[9px] text-[#C3C8BB] truncate mt-0.5">${c.oddsText}</div>
+          </div>
+        `;
+        card.onclick = () => {
+          STATE.selectedCaseIdx = idx;
+          updateCaseHero();
+          renderCasesGrid();
+        };
+        grid.appendChild(card);
+      });
+    }
+
+    function createReelCardElement(item) {
+      const el = document.createElement('div');
+      el.className = `w-28 sm:w-36 h-28 sm:h-32 rounded-md3-md p-2 shrink-0 border flex flex-col justify-between ${item.tier.css}`;
+      el.innerHTML = `
+        <div class="flex justify-between items-center text-xs">
+          <span>${item.flag}</span>
+          <span class="text-[8px] font-mono font-bold uppercase px-1 py-0.5 rounded bg-black/50">${item.tier.name}</span>
+        </div>
+        <div class="text-center font-mono font-black text-[10px] sm:text-xs truncate">${item.formatted}</div>
+        <div class="text-center text-[10px] font-bold text-[#9CD67D] bg-black/50 rounded py-0.5">${item.price.toLocaleString('ru-RU')} ₽</div>
+      `;
+      return el;
+    }
+
+    function updateCaseHero() {
+      const c = CASES[STATE.selectedCaseIdx] || CASES[0];
+      const price = getEffectiveCasePrice(c);
+      document.getElementById('activeCaseIcon').textContent = c.icon;
+      document.getElementById('activeCaseTitle').textContent = `Кейс: ${c.name}`;
+      document.getElementById('activeCaseSubtitle').textContent = c.oddsText;
+      document.getElementById('activeCasePriceTag').textContent = `${price.toLocaleString('ru-RU')} ₽`;
+      document.getElementById('openCaseBtn').querySelector('span').textContent = `ОТКРЫТЬ (${price.toLocaleString('ru-RU')} ₽)`;
+      document.getElementById('activeCaseOddsSummary').textContent = c.oddsText;
+
+      const track = document.getElementById('rouletteTrack');
+      track.style.transition = 'none';
+      track.style.transform = 'translateX(0px)';
+      track.innerHTML = '';
+      for (let i = 0; i < 15; i++) {
+        const dummy = generateSimByCost(c.price, rollOutcomeCategory(), c.pool);
+        track.appendChild(createReelCardElement(dummy));
+      }
+    }
+
+    function runCaseRoulette() {
+      if (isReelSpinning) return;
+      const c = CASES[STATE.selectedCaseIdx];
+      const price = getEffectiveCasePrice(c);
+      if (STATE.balance < price) {
+        showToast('Недостаточно средств на балансе!', 'error');
+        return;
+      }
+
+      STATE.balance -= price;
+      updateUI();
+      saveState();
+
+      isReelSpinning = true;
+      document.getElementById('openCaseBtn').disabled = true;
+
+      const outcome = rollOutcomeCategory();
+      const wonSim = generateSimByCost(c.price, outcome, c.pool);
+      pendingSim = wonSim;
+
+      const track = document.getElementById('rouletteTrack');
+      const viewport = document.getElementById('rouletteViewport');
+      track.innerHTML = '';
+
+      const totalCards = 50;
+      const winIndex = 38;
+
+      for (let i = 0; i < totalCards; i++) {
+        const it = (i === winIndex) ? wonSim : generateSimByCost(c.price, rollOutcomeCategory(), c.pool);
+        track.appendChild(createReelCardElement(it));
+      }
+
+      if (STATE.fastMode) {
+        setTimeout(() => finishRoulette(wonSim), 150);
+        return;
+      }
+
+      const targetCardEl = track.children[winIndex];
+      const cardWidth = targetCardEl.offsetWidth;
+      const gap = 8;
+      const cardStep = cardWidth + gap;
+      const viewportWidth = viewport.clientWidth;
+      const targetCenter = (winIndex * cardStep) + (cardWidth / 2) + 16;
+      const finalTranslateX = - (targetCenter - (viewportWidth / 2));
+
+      const duration = 4000;
+      const startTime = performance.now();
+      let lastPassed = -1;
+
+      function step(now) {
+        const elapsed = now - startTime;
+        const progress = Math.min(elapsed / duration, 1);
+        const ease = 1 - Math.pow(1 - progress, 3.5);
+        const currentX = ease * finalTranslateX;
+
+        track.style.transform = `translateX(${currentX}px)`;
+
+        const passedIdx = Math.floor((Math.abs(currentX) + (viewportWidth / 2)) / cardStep);
+        if (passedIdx !== lastPassed && passedIdx < totalCards) {
+          lastPassed = passedIdx;
+          audio.playTick();
+        }
+
+        if (progress < 1) {
+          requestAnimationFrame(step);
+        } else {
+          setTimeout(() => finishRoulette(wonSim), 250);
+        }
+      }
+      requestAnimationFrame(step);
+    }
+
+    function finishRoulette(wonSim) {
+      isReelSpinning = false;
+      document.getElementById('openCaseBtn').disabled = false;
+      audio.playFanfare(wonSim.tier.rank);
+      if (wonSim.tier.rank >= 4) spawnBurst(55);
+      pushLive(wonSim);
+      showDropModal(wonSim);
+    }
+
+    function showDropModal(sim) {
+      pendingSim = sim;
+      const modal = document.getElementById('dropResultModal');
+      const badge = document.getElementById('dropResultBadge');
+      badge.className = `px-3 py-0.5 rounded-md3-full text-[10px] font-mono font-bold uppercase border ${sim.tier.css}`;
+      badge.textContent = sim.tier.name;
+      document.getElementById('dropResultFlag').textContent = sim.flag;
+      document.getElementById('dropResultOperator').textContent = sim.operator;
+      document.getElementById('dropResultPhone').textContent = sim.formatted;
+      document.getElementById('dropResultPattern').textContent = sim.pattern;
+      document.getElementById('dropResultWorth').textContent = `${sim.price.toLocaleString('ru-RU')} ₽`;
+      toggleModal(modal, true);
+    }
+
+    document.getElementById('dropKeepBtn').onclick = () => {
+      if (pendingSim) {
+        STATE.inventory.push(pendingSim);
+        showToast('Номер сохранен в Сейф!', 'success');
+        pendingSim = null;
+      }
+      toggleModal(document.getElementById('dropResultModal'), false);
+      updateUI();
+      saveState();
+    };
+
+    document.getElementById('dropSellBtn').onclick = () => {
+      if (pendingSim) {
+        STATE.balance += pendingSim.price;
+        showToast(`Номер продан за +${pendingSim.price.toLocaleString('ru-RU')} ₽`, 'success');
+        pendingSim = null;
+      }
+      toggleModal(document.getElementById('dropResultModal'), false);
+      updateUI();
+      saveState();
+    };
+
+    document.getElementById('openCaseBtn').onclick = runCaseRoulette;
+
+    /*
+      ======================================================
+      БАРАБАН (FAST DROP): ВЫИГРЫШ СТРОГО ОТ СТАВКИ
+      ------------------------------------------------------
+      Базовая ставка: 50 ₽ (с множителями x1, x2, x5, x10).
+      На ставке 100 ₽:
+      - Мусор (73%): 35 - 50 ₽
+      - Средний (17%): 85 - 120 ₽
+      - Редкий (8.5%): 200 - 350 ₽
+      - Джекпот (1.5%): до 5000 ₽ (максимум 50x)
+      ======================================================
+    */
+    let isOdometerRunning = false;
+    let odometerInterval = null;
+    const ODOMETER_BASE = 50;
+
+    function renderOdometerCountries() {
+      const container = document.getElementById('odometerCountrySelector');
+      container.innerHTML = '';
+      Object.keys(COUNTRIES).forEach(cid => {
+        const c = COUNTRIES[cid];
+        const btn = document.createElement('button');
+        const isSel = STATE.odometerCountry === cid;
+        btn.className = `state-layer px-2.5 py-1 rounded-md3-full text-xs font-bold border cursor-pointer ${
+          isSel ? 'bg-[#205107] text-[#B7F397] border-[#9CD67D]' : 'bg-[#272B25] text-[#C3C8BB] border-[#43483E]'
+        }`;
+        btn.textContent = `${c.flag} ${c.prefix}`;
+        btn.onclick = () => {
+          STATE.odometerCountry = cid;
+          renderOdometerCountries();
+          initOdometerDigits();
+        };
+        container.appendChild(btn);
+      });
+    }
+
+    function renderOdometerBets() {
+      const container = document.getElementById('odometerBetButtons');
+      container.innerHTML = '';
+      [1, 2, 5, 10].forEach(m => {
+        const btn = document.createElement('button');
+        const isSel = STATE.odometerMult === m;
+        btn.className = `state-layer px-2 py-1 rounded-md3-full text-[11px] font-mono font-bold border cursor-pointer ${
+          isSel ? 'bg-[#9CD67D] text-[#0C3900] border-[#9CD67D]' : 'bg-[#272B25] text-[#C3C8BB] border-[#43483E]'
+        }`;
+        btn.textContent = `x${m} (${m * ODOMETER_BASE} ₽)`;
+        btn.onclick = () => {
+          STATE.odometerMult = m;
+          renderOdometerBets();
+          document.getElementById('odometerSpinBtn').querySelector('span').textContent = `КРУТИТЬ БАРАБАН (${m * ODOMETER_BASE} ₽)`;
+        };
+        container.appendChild(btn);
+      });
+    }
+
+    function initOdometerDigits(sample = '+7 (999) 777-77-77') {
+      const box = document.getElementById('odometerDisplayLine');
+      box.innerHTML = '';
+      for (let i = 0; i < sample.length; i++) {
+        const ch = sample[i];
+        const span = document.createElement('span');
+        if (/[0-9]/.test(ch)) {
+          span.className = 'odometer-digit-box';
+          span.textContent = ch;
+        } else {
+          span.className = 'text-xs text-[#C3C8BB] font-mono px-0.5';
+          span.textContent = ch;
+        }
+        box.appendChild(span);
+      }
+    }
+
+    function runOdometerSpin() {
+      if (isOdometerRunning) return;
+      const currentBetCost = ODOMETER_BASE * STATE.odometerMult;
+      if (STATE.balance < currentBetCost) {
+        showToast('Недостаточно средств для барабана!', 'error');
+        return;
+      }
+
+      if (odometerInterval) {
+        clearInterval(odometerInterval);
+        odometerInterval = null;
+      }
+
+      STATE.balance -= currentBetCost;
+      updateUI();
+      saveState();
+
+      isOdometerRunning = true;
+      document.getElementById('odometerSpinBtn').disabled = true;
+      document.getElementById('odometerLiveStatus').textContent = 'ГЕНЕРАЦИЯ СВЯЗИ...';
+
+      const outcome = rollOutcomeCategory();
+      const wonSim = generateSimByCost(currentBetCost, outcome, [STATE.odometerCountry]);
+
+      const box = document.getElementById('odometerDisplayLine');
+      box.innerHTML = '';
+      const text = wonSim.formatted;
+      const digitNodes = [];
+
+      for (let i = 0; i < text.length; i++) {
+        const ch = text[i];
+        const span = document.createElement('span');
+        if (/[0-9]/.test(ch)) {
+          span.className = 'odometer-digit-box';
+          span.textContent = Math.floor(Math.random() * 10);
+          span.dataset.target = ch;
+          digitNodes.push(span);
+        } else {
+          span.className = 'text-xs text-[#C3C8BB] font-mono px-0.5';
+          span.textContent = ch;
+        }
+        box.appendChild(span);
+      }
+
+      odometerInterval = setInterval(() => {
+        digitNodes.forEach(node => {
+          if (!node.classList.contains('locked')) node.textContent = Math.floor(Math.random() * 10);
+        });
+      }, 40);
+
+      digitNodes.forEach((node, idx) => {
+        setTimeout(() => {
+          node.classList.add('locked');
+          node.textContent = node.dataset.target;
+          audio.playTick();
+          if (idx === digitNodes.length - 1) {
+            clearInterval(odometerInterval);
+            odometerInterval = null;
+            isOdometerRunning = false;
+            document.getElementById('odometerSpinBtn').disabled = false;
+            document.getElementById('odometerLiveStatus').textContent = 'СВЯЗЬ УСТАНОВЛЕНА';
+            document.getElementById('odometerPatternDesc').textContent = wonSim.pattern;
+            document.getElementById('odometerPriceDisplay').textContent = `${wonSim.price.toLocaleString('ru-RU')} ₽`;
+            audio.playFanfare(wonSim.tier.rank);
+            if (wonSim.tier.rank >= 4) spawnBurst(45);
+            pushLive(wonSim);
+            showDropModal(wonSim);
+          }
+        }, 200 + idx * (STATE.fastMode ? 35 : 80));
+      });
+    }
+
+    document.getElementById('odometerSpinBtn').onclick = runOdometerSpin;
+
+    /* Case Battles 1v1 */
+    function initBattles() {
+      const select = document.getElementById('battleCaseSelect');
+      select.innerHTML = '';
+      CASES.forEach((c, idx) => {
+        const opt = document.createElement('option');
+        opt.value = idx;
+        opt.textContent = `${c.name} (${c.price.toLocaleString('ru-RU')} ₽)`;
+        select.appendChild(opt);
+      });
+
+      document.getElementById('startBattleBtn').onclick = () => {
+        const c = CASES[select.value];
+        const price = getEffectiveCasePrice(c);
+        if (STATE.balance < price) {
+          showToast('Недостаточно средств для участия в батле!', 'error');
+          return;
+        }
+
+        STATE.balance -= price;
+        updateUI();
+        saveState();
+
+        const pSim = generateSimByCost(c.price, rollOutcomeCategory(), c.pool);
+        const bSim = generateSimByCost(c.price, rollOutcomeCategory(), c.pool);
+
+        document.getElementById('battlePlayerScore').textContent = `${pSim.price.toLocaleString('ru-RU')} ₽`;
+        document.getElementById('battleBotScore').textContent = `${bSim.price.toLocaleString('ru-RU')} ₽`;
+
+        const pBox = document.getElementById('battlePlayerCards');
+        const bBox = document.getElementById('battleBotCards');
+        pBox.innerHTML = `<div class="p-2 rounded-md3-sm border text-xs font-mono font-bold ${pSim.tier.css}">${pSim.formatted} (${pSim.price}₽)</div>`;
+        bBox.innerHTML = `<div class="p-2 rounded-md3-sm border text-xs font-mono font-bold ${bSim.tier.css}">${bSim.formatted} (${bSim.price}₽)</div>`;
+
+        if (pSim.price >= bSim.price) {
+          audio.playFanfare(4);
+          spawnBurst(50);
+          showToast(`Победа в Батле! Зачислено 2 номера на ${(pSim.price + bSim.price).toLocaleString('ru-RU')} ₽`, 'success');
+          STATE.inventory.push(pSim, bSim);
+        } else {
+          audio.playFail();
+          showToast('Поражение! Бот-мажор забрал ваш номер', 'error');
+        }
+        updateUI();
+        saveState();
+      };
+    }
+
+    /*
+      ======================================================
+      КОНТРАКТЫ (TRADE-UP): СТРОГО СУММА * (0.85 - 1.30)
+      ======================================================
+    */
+    function syncContractsUI() {
+      const slotsBox = document.getElementById('contractSlotsContainer');
+      slotsBox.innerHTML = '';
+      for (let i = 0; i < 5; i++) {
+        const simId = STATE.contractSimIds[i];
+        const sim = STATE.inventory.find(s => s.id === simId);
+        const slot = document.createElement('div');
+        if (sim) {
+          slot.className = `h-20 rounded-md3-md border-2 flex flex-col items-center justify-between p-2 text-center cursor-pointer ${sim.tier.css}`;
+          slot.innerHTML = `
+            <span class="text-xs">${sim.flag}</span>
+            <span class="font-mono text-[9px] font-bold truncate">${sim.formatted}</span>
+            <span class="text-[9px] font-bold text-[#9CD67D]">${sim.price.toLocaleString('ru-RU')}₽</span>
+          `;
+          slot.onclick = () => {
+            STATE.contractSimIds.splice(i, 1);
+            syncContractsUI();
+          };
+        } else {
+          slot.className = 'h-20 rounded-md3-md bg-[#0B0F0A] border-2 border-dashed border-[#43483E] flex flex-col items-center justify-center p-2 text-center text-xs text-[#43483E] font-bold';
+          slot.innerHTML = `<span>+ Слот</span>`;
+        }
+        slotsBox.appendChild(slot);
+      }
+
+      document.getElementById('contractCountText').textContent = `${STATE.contractSimIds.length} / 5`;
+      document.getElementById('executeContractBtn').disabled = STATE.contractSimIds.length < 3;
+
+      const availBox = document.getElementById('contractAvailableList');
+      availBox.innerHTML = '';
+      const available = STATE.inventory.filter(s => !STATE.contractSimIds.includes(s.id));
+      if (available.length === 0) {
+        availBox.innerHTML = '<span class="text-xs text-[#C3C8BB] col-span-4 py-3">В сейфе нет доступных номеров</span>';
+        return;
+      }
+      available.forEach(sim => {
+        const item = document.createElement('div');
+        item.className = `state-layer p-2 rounded-md3-sm border text-xs cursor-pointer flex justify-between items-center ${sim.tier.css}`;
+        item.innerHTML = `<span>${sim.flag} ${sim.formatted}</span><b class="text-[#9CD67D]">${sim.price.toLocaleString('ru-RU')}₽</b>`;
+        item.onclick = () => {
+          if (STATE.contractSimIds.length < 5) {
+            STATE.contractSimIds.push(sim.id);
+            syncContractsUI();
+          }
+        };
+        availBox.appendChild(item);
+      });
+    }
+
+    document.getElementById('executeContractBtn').onclick = () => {
+      if (STATE.contractSimIds.length < 3) return;
+      const inputs = STATE.inventory.filter(s => STATE.contractSimIds.includes(s.id));
+      const totalWorth = inputs.reduce((acc, s) => acc + s.price, 0);
+      const maxRank = Math.max(...inputs.map(s => s.tier.rank));
+
+      STATE.inventory = STATE.inventory.filter(s => !STATE.contractSimIds.includes(s.id));
+      STATE.contractSimIds = [];
+
+      const targetRank = Math.min(maxRank + 1, 7);
+      const targetKey = Object.keys(RARITY).find(k => RARITY[k].rank === targetRank) || 'gold';
+
+      // Строго: сумма положенных номеров * (0.85 - 1.30)
+      const multiplier = 0.85 + Math.random() * 0.45;
+      const finalPrice = Math.max(20, Math.round(totalWorth * multiplier));
+
+      const wonSim = generateSimByCost(finalPrice, 'profit', ['ru', 'ua', 'kz', 'ae']);
+      wonSim.tierKey = targetKey;
+      wonSim.tier = RARITY[targetKey];
+      wonSim.price = finalPrice;
+
+      audio.playFanfare(targetRank);
+      spawnBurst(60);
+      pushLive(wonSim);
+      showDropModal(wonSim);
+      syncContractsUI();
+      saveState();
+    };
+
+    /*
+      ======================================================
+      АПГРЕЙДЕР: ВЫИГРЫШ СТРОГО = СТОИМОСТЬ ЖЕРТВЫ * MULT (X * M)
+      ======================================================
+    */
+    const UPGRADE_CHANCES = [
+      { mult: 1.5, chance: 54.6 }, // 82% RTP / 1.5
+      { mult: 2.0, chance: 41.0 }, // 82% RTP / 2.0
+      { mult: 3.0, chance: 27.3 }, // 82% RTP / 3.0
+      { mult: 5.0, chance: 16.4 }, // 82% RTP / 5.0
+      { mult: 10.0, chance: 8.2 }, // 82% RTP / 10.0
+      { mult: 20.0, chance: 4.1 }, // 82% RTP / 20.0
+      { mult: 50.0, chance: 1.64 } // 82% RTP / 50.0
+    ];
+
+    let isUpgradeSpinning = false;
+    let upgraderAngle = 0;
+
+    function renderUpgraderWheel(winChancePercent) {
+      const cvs = document.getElementById('upgraderWheelCanvas');
+      const ctx = cvs.getContext('2d');
+      const dpr = window.devicePixelRatio || 1;
+      const size = 280;
+
+      if (cvs.width !== size * dpr) {
+        cvs.width = size * dpr;
+        cvs.height = size * dpr;
+      }
+
+      ctx.save();
+      ctx.scale(dpr, dpr);
+      ctx.clearRect(0, 0, size, size);
+
+      const cx = size / 2;
+      const cy = size / 2;
+      const r = cx - 14;
+
+      ctx.save();
+      ctx.translate(cx, cy);
+      ctx.rotate(upgraderAngle - Math.PI / 2);
+
+      const winAngle = (winChancePercent / 100) * (Math.PI * 2);
+      ctx.beginPath();
+      ctx.moveTo(0, 0);
+      ctx.arc(0, 0, r, 0, winAngle);
+      ctx.fillStyle = '#9CD67D';
+      ctx.fill();
+
+      ctx.beginPath();
+      ctx.moveTo(0, 0);
+      ctx.arc(0, 0, r, winAngle, Math.PI * 2);
+      ctx.fillStyle = '#93000A';
+      ctx.fill();
+
+      ctx.lineWidth = 2;
+      ctx.strokeStyle = '#10140F';
+      ctx.beginPath();
+      ctx.moveTo(0, 0);
+      ctx.lineTo(r, 0);
+      ctx.moveTo(0, 0);
+      ctx.lineTo(r * Math.cos(winAngle), r * Math.sin(winAngle));
+      ctx.stroke();
+
+      ctx.beginPath();
+      ctx.arc(0, 0, 26, 0, Math.PI * 2);
+      ctx.fillStyle = '#0B0F0A';
+      ctx.fill();
+      ctx.lineWidth = 3;
+      ctx.strokeStyle = '#43483E';
+      ctx.stroke();
+
+      ctx.restore();
+      ctx.restore();
+    }
+
+    function syncUpgraderUI() {
+      const opt = UPGRADE_CHANCES[STATE.upgraderMultIdx] || UPGRADE_CHANCES[1];
+      document.getElementById('upgraderChanceLabel').textContent = `Шанс победы: ${opt.chance.toFixed(1)}% (${opt.mult}x)`;
+      renderUpgraderWheel(opt.chance);
+
+      const row = document.getElementById('upgraderMultipliersRow');
+      row.innerHTML = '';
+      UPGRADE_CHANCES.forEach((o, i) => {
+        const btn = document.createElement('button');
+        const isSel = STATE.upgraderMultIdx === i;
+        btn.className = `state-layer p-1.5 rounded-md3-sm text-xs font-mono font-bold border cursor-pointer ${
+          isSel ? 'bg-[#9CD67D] text-[#0C3900] border-[#9CD67D]' : 'bg-[#272B25] text-[#C3C8BB] border-[#43483E]'
+        }`;
+        btn.textContent = `x${o.mult}`;
+        btn.onclick = () => {
+          if (isUpgradeSpinning) return;
+          STATE.upgraderMultIdx = i;
+          syncUpgraderUI();
+        };
+        row.appendChild(btn);
+      });
+
+      const slot = document.getElementById('upgraderTargetSlot');
+      const targetSim = STATE.inventory.find(s => s.id === STATE.upgraderSimId);
+      if (targetSim) {
+        slot.className = `p-3 rounded-md3-md border flex items-center justify-between cursor-pointer ${targetSim.tier.css}`;
+        slot.innerHTML = `
+          <div>
+            <div class="font-bold text-xs text-white">${targetSim.flag} ${targetSim.formatted}</div>
+            <div class="text-[10px] text-[#C3C8BB]">${targetSim.tier.name}</div>
+          </div>
+          <div class="font-mono font-bold text-sm text-[#9CD67D]">${targetSim.price.toLocaleString('ru-RU')} ₽</div>
+        `;
+        document.getElementById('startUpgradeBtn').disabled = false;
+      } else {
+        slot.className = 'state-layer p-3 rounded-md3-md bg-[#272B25] border border-[#43483E] flex items-center justify-between cursor-pointer hover:border-[#9CD67D]';
+        slot.innerHTML = `
+          <span class="text-xs text-[#C3C8BB]">Нажмите, чтобы выбрать номер из сейфа</span>
+          <span class="text-xs text-[#9CD67D] font-bold">Выбрать ➔</span>
+        `;
+        document.getElementById('startUpgradeBtn').disabled = true;
+      }
+
+      slot.onclick = () => {
+        if (isUpgradeSpinning) return;
+        if (STATE.inventory.length === 0) {
+          showToast('В сейфе нет номеров! Откройте кейс', 'info');
+          return;
+        }
+        const curIdx = STATE.inventory.findIndex(s => s.id === STATE.upgraderSimId);
+        const nextSim = STATE.inventory[(curIdx + 1) % STATE.inventory.length];
+        STATE.upgraderSimId = nextSim.id;
+        syncUpgraderUI();
+      };
+    }
+
+    document.getElementById('startUpgradeBtn').onclick = () => {
+      if (isUpgradeSpinning) return;
+      const sim = STATE.inventory.find(s => s.id === STATE.upgraderSimId);
+      if (!sim) return;
+
+      isUpgradeSpinning = true;
+      document.getElementById('startUpgradeBtn').disabled = true;
+
+      const opt = UPGRADE_CHANCES[STATE.upgraderMultIdx];
+      const roll = Math.random() * 100;
+      const win = roll < opt.chance;
+
+      const winAngle = (opt.chance / 100) * (Math.PI * 2);
+      const redAngle = (Math.PI * 2) - winAngle;
+
+      const maxWinPadding = Math.min(5 * Math.PI / 180, winAngle * 0.2);
+      const maxRedPadding = Math.min(5 * Math.PI / 180, redAngle * 0.2);
+
+      let targetAlpha = 0;
+      if (win) {
+        targetAlpha = maxWinPadding + Math.random() * (winAngle - 2 * maxWinPadding);
+      } else {
+        targetAlpha = winAngle + maxRedPadding + Math.random() * (redAngle - 2 * maxRedPadding);
+      }
+
+      const desiredMod = (Math.PI * 2 - (targetAlpha % (Math.PI * 2))) % (Math.PI * 2);
+      const currentMod = (upgraderAngle % (Math.PI * 2) + Math.PI * 2) % (Math.PI * 2);
+      let deltaAngle = desiredMod - currentMod;
+      if (deltaAngle < 0) deltaAngle += Math.PI * 2;
+
+      const spins = (4 + Math.floor(Math.random() * 3)) * Math.PI * 2;
+      const startAngle = upgraderAngle;
+      const totalRotation = spins + deltaAngle;
+      const targetAngle = startAngle + totalRotation;
+
+      const duration = STATE.fastMode ? 600 : 3600;
+      const startTime = performance.now();
+      let lastTickAngle = startAngle;
+
+      function step(now) {
+        const elapsed = now - startTime;
+        const p = Math.min(elapsed / duration, 1);
+        const ease = 1 - Math.pow(1 - p, 4);
+        upgraderAngle = startAngle + ease * totalRotation;
+
+        if (Math.abs(upgraderAngle - lastTickAngle) >= (Math.PI / 10)) {
+          audio.playTick();
+          lastTickAngle = upgraderAngle;
+        }
+
+        renderUpgraderWheel(opt.chance);
+
+        if (p < 1) {
+          requestAnimationFrame(step);
+        } else {
+          isUpgradeSpinning = false;
+          upgraderAngle = targetAngle;
+          renderUpgraderWheel(opt.chance);
+
+          STATE.inventory = STATE.inventory.filter(s => s.id !== sim.id);
+          STATE.upgraderSimId = null;
+
+          if (win) {
+            audio.playFanfare(5);
+            spawnBurst(70);
+            
+            // СТРОГО: цена жертвы * выбранный множитель!
+            const exactWonPrice = Math.round(sim.price * opt.mult);
+            const wonSim = generateSimByCost(exactWonPrice, 'profit', [sim.countryId]);
+            wonSim.price = exactWonPrice;
+
+            pushLive(wonSim);
+            showDropModal(wonSim);
+          } else {
+            audio.playFail();
+            showToast(`Апгрейд не удался! Номер ${sim.formatted} сгорел 🔥`, 'error');
+          }
+          syncUpgraderUI();
+          updateUI();
+          saveState();
+        }
+      }
+      requestAnimationFrame(step);
+    };
+
+    /* Vault Rendering */
+    function renderVault() {
+      const grid = document.getElementById('vaultCardsGrid');
+      const filter = document.getElementById('vaultRarityFilter').value;
+      grid.innerHTML = '';
+
+      const items = (filter === 'all') ? STATE.inventory : STATE.inventory.filter(s => s.tierKey === filter);
+
+      if (items.length === 0) {
+        grid.innerHTML = '<div class="col-span-3 text-center py-8 text-xs text-[#C3C8BB]">В сейфе пока нет номеров</div>';
+        return;
+      }
+
+      items.forEach(sim => {
+        const card = document.createElement('div');
+        card.className = `p-3 rounded-md3-lg border flex flex-col justify-between gap-2.5 ${sim.tier.css}`;
+        card.innerHTML = `
+          <div class="flex items-center justify-between">
+            <span class="text-lg">${sim.flag}</span>
+            <span class="text-[9px] font-mono font-bold uppercase px-1.5 py-0.5 rounded bg-black/50">${sim.tier.name}</span>
+          </div>
+          <div>
+            <div class="font-mono text-xs font-bold text-white truncate">${sim.formatted}</div>
+            <div class="text-[10px] text-[#C3C8BB] truncate mt-0.5">${sim.pattern}</div>
+          </div>
+          <div class="flex items-center justify-between border-t border-black/30 pt-2">
+            <span class="font-mono font-bold text-xs text-[#9CD67D]">${sim.price.toLocaleString('ru-RU')} ₽</span>
+            <button class="sell-btn state-layer px-2.5 py-1 rounded-md3-full bg-black/50 hover:bg-black/80 text-[10px] font-bold text-white cursor-pointer">Продать</button>
+          </div>
+        `;
+        card.querySelector('.sell-btn').onclick = () => {
+          STATE.balance += sim.price;
+          STATE.inventory = STATE.inventory.filter(s => s.id !== sim.id);
+          showToast(`Номер продан за +${sim.price.toLocaleString('ru-RU')} ₽`, 'success');
+          updateUI();
+          renderVault();
+          saveState();
+        };
+        grid.appendChild(card);
+      });
+    }
+
+    document.getElementById('vaultRarityFilter').onchange = renderVault;
+
+    document.getElementById('sellAllCommonBtn').onclick = () => {
+      const commons = STATE.inventory.filter(s => s.tierKey === 'common');
+      if (commons.length === 0) return;
+      const sum = commons.reduce((a, s) => a + s.price, 0);
+      STATE.balance += sum;
+      STATE.inventory = STATE.inventory.filter(s => s.tierKey !== 'common');
+      showToast(`Продано ${commons.length} обычных номеров за +${sum.toLocaleString('ru-RU')} ₽`, 'success');
+      updateUI();
+      renderVault();
+      saveState();
+    };
+
+    document.getElementById('sellAllVaultBtn').onclick = () => {
+      if (STATE.inventory.length === 0) return;
+      const sum = STATE.inventory.reduce((a, s) => a + s.price, 0);
+      STATE.balance += sum;
+      STATE.inventory = [];
+      showToast(`Все номера проданы за +${sum.toLocaleString('ru-RU')} ₽`, 'success');
+      updateUI();
+      renderVault();
+      saveState();
+    };
+
+    /* Shop & Idle Upgrades */
+    document.getElementById('upgradePassiveBtn').onclick = () => {
+      const cost = Math.round(400 * Math.pow(1.9, STATE.passiveLvl));
+      if (STATE.balance >= cost) {
+        STATE.balance -= cost;
+        STATE.passiveLvl++;
+        showToast('SIM-ферма улучшена!', 'success');
+        updateUI();
+        saveState();
+      } else showToast('Недостаточно средств!', 'error');
+    };
+
+    document.getElementById('upgradeMarketBtn').onclick = () => {
+      if (STATE.marketLvl >= 10) return showToast('Максимальный уровень скупщика!', 'info');
+      const cost = Math.round(1200 * Math.pow(1.85, STATE.marketLvl));
+      if (STATE.balance >= cost) {
+        STATE.balance -= cost;
+        STATE.marketLvl++;
+        showToast('VIP-Скупщик улучшен (+3%)!', 'success');
+        updateUI();
+        saveState();
+      } else showToast('Недостаточно средств!', 'error');
+    };
+
+    document.getElementById('upgradeDiscountBtn').onclick = () => {
+      if (STATE.discountLvl >= 8) return showToast('Максимальная скидка достигнута (20%)!', 'info');
+      const cost = Math.round(2500 * Math.pow(2.1, STATE.discountLvl));
+      if (STATE.balance >= cost) {
+        STATE.balance -= cost;
+        STATE.discountLvl++;
+        showToast(`Скидка на кейсы теперь ${(STATE.discountLvl * 2.5).toFixed(1)}%!`, 'success');
+        updateUI();
+        renderCasesGrid();
+        updateCaseHero();
+        saveState();
+      } else showToast('Недостаточно средств!', 'error');
+    };
+
+    document.getElementById('emergencyAidBtn').onclick = () => {
+      if (STATE.balance >= 50) return showToast('Пособие доступно только при балансе < 50 ₽', 'info');
+      STATE.balance += 150;
+      showToast('Пособие +150 ₽ зачислено!', 'success');
+      updateUI();
+      saveState();
+    };
+
+    setInterval(() => {
+      if (STATE.passiveLvl > 0) {
+        STATE.balance += (STATE.passiveLvl * 2);
+        document.getElementById('playerBalance').textContent = `${STATE.balance.toLocaleString('ru-RU')} ₽`;
+      }
+    }, 1000);
+
+    /* Daily Gift Modal */
+    document.getElementById('openDailyGiftBtn').onclick = () => {
+      const now = Date.now();
+      const ready = (now - STATE.lastDailyClaim >= 24 * 3600 * 1000);
+      document.getElementById('dailyBonusStatusText').textContent = ready ? 'ГОТОВ К ВЫДАЧЕ' : 'УЖЕ ПОЛУЧЕН СЕГОДНЯ';
+      document.getElementById('dailyBonusStatusText').className = `font-mono font-bold ${ready ? 'text-[#9CD67D]' : 'text-[#C3C8BB]'}`;
+      document.getElementById('claimDailyBonusBtn').disabled = !ready;
+      toggleModal(document.getElementById('dailyGiftModal'), true);
+    };
+    document.getElementById('closeDailyGiftBtn').onclick = () => {
+      toggleModal(document.getElementById('dailyGiftModal'), false);
+    };
+
+    document.getElementById('claimDailyBonusBtn').onclick = () => {
+      const now = Date.now();
+      if (now - STATE.lastDailyClaim < 24 * 3600 * 1000) {
+        showToast('Подарок уже был получен сегодня!', 'info');
+        return;
+      }
+      STATE.balance += 250;
+      STATE.lastDailyClaim = now;
+      showToast('Получен ежедневный подарок +250 ₽!', 'success');
+      toggleModal(document.getElementById('dailyGiftModal'), false);
+      updateUI();
+      saveState();
+    };
+
+    /* Device Mode Management */
+    function setDeviceMode(mode) {
+      STATE.deviceMode = mode;
+      document.body.className = `mode-${mode} flex flex-col min-h-screen`;
+      document.getElementById('deviceIcon').textContent = mode === 'pc' ? '🖥️' : '📱';
+      document.getElementById('deviceLabel').textContent = mode === 'pc' ? 'ПК' : 'МОБ';
+      saveState();
+    }
+
+    let selectedModeInDialog = 'pc';
+    document.getElementById('deviceSelectPhone').onclick = () => {
+      selectedModeInDialog = 'mobile';
+      document.getElementById('deviceSelectPhone').classList.add('border-[#9CD67D]');
+      document.getElementById('deviceSelectPc').classList.remove('border-[#9CD67D]');
+    };
+    document.getElementById('deviceSelectPc').onclick = () => {
+      selectedModeInDialog = 'pc';
+      document.getElementById('deviceSelectPc').classList.add('border-[#9CD67D]');
+      document.getElementById('deviceSelectPhone').classList.remove('border-[#9CD67D]');
+    };
+    document.getElementById('confirmDeviceBtn').onclick = () => {
+      setDeviceMode(selectedModeInDialog);
+      toggleModal(document.getElementById('deviceModal'), false);
+      showToast(`Режим «${selectedModeInDialog === 'pc' ? 'ПК' : 'Телефон'}» активирован!`, 'success');
+    };
+
+    document.getElementById('deviceToggleBtn').onclick = () => {
+      const next = STATE.deviceMode === 'pc' ? 'mobile' : 'pc';
+      setDeviceMode(next);
+      showToast(`Переключено в режим ${next === 'pc' ? 'ПК 🖥️' : 'Телефона 📱'}`);
+    };
+
+    document.getElementById('fastSpinToggle').onclick = () => {
+      STATE.fastMode = !STATE.fastMode;
+      const btn = document.getElementById('fastSpinToggle');
+      if (STATE.fastMode) {
+        btn.classList.add('bg-[#205107]', 'text-[#B7F397]', 'border-[#9CD67D]');
+      } else {
+        btn.classList.remove('bg-[#205107]', 'text-[#B7F397]', 'border-[#9CD67D]');
+      }
+      showToast(`Турбо-режим ${STATE.fastMode ? 'ВКЛ' : 'ВЫКЛ'}`);
+    };
+
+    document.getElementById('soundToggle').onclick = () => {
+      audio.enabled = !audio.enabled;
+      document.getElementById('soundIcon').textContent = audio.enabled ? '🔊' : '🔇';
+    };
+
+    /* Keyboard Hotkeys */
+    window.addEventListener('keydown', (e) => {
+      if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT') return;
+      if (e.code === 'Space') {
+        e.preventDefault();
+        const casesTab = document.getElementById('tab-cases');
+        const odoTab = document.getElementById('tab-odometer');
+        const upTab = document.getElementById('tab-upgrader');
+        if (!casesTab.classList.contains('hidden')) document.getElementById('openCaseBtn').click();
+        else if (!odoTab.classList.contains('hidden')) document.getElementById('odometerSpinBtn').click();
+        else if (!upTab.classList.contains('hidden')) document.getElementById('startUpgradeBtn').click();
+      }
+      const map = {
+        'Digit1': 'tab-cases',
+        'Digit2': 'tab-odometer',
+        'Digit3': 'tab-battles',
+        'Digit4': 'tab-contracts',
+        'Digit5': 'tab-upgrader',
+        'Digit6': 'tab-vault',
+        'Digit7': 'tab-shop'
+      };
+      if (map[e.code]) switchTab(map[e.code]);
+      if (e.key === 'Escape') {
+        document.querySelectorAll('.fixed:not(#splashScreen):not(#deviceModal)').forEach(m => toggleModal(m, false));
+      }
+    });
+
+    /* Application Initialization */
+    function initializeApplication() {
+      loadState();
+
+      const now = Date.now();
+      const elapsedSec = Math.floor((now - STATE.lastTimestamp) / 1000);
+      if (elapsedSec > 10 && STATE.passiveLvl > 0) {
+        const cappedSec = Math.min(elapsedSec, 4 * 3600);
+        const earned = cappedSec * (STATE.passiveLvl * 2);
+        if (earned > 0) {
+          STATE.balance += earned;
+          setTimeout(() => showToast(`Офлайн-доход SIM-фермы: +${earned.toLocaleString('ru-RU')} ₽!`, 'success'), 600);
+        }
+      }
+
+      renderCasesGrid();
+      updateCaseHero();
+      renderOdometerCountries();
+      renderOdometerBets();
+      initOdometerDigits();
+      initBattles();
+      updateUI();
+      setDeviceMode(STATE.deviceMode || 'pc');
+
+      for (let i = 0; i < 6; i++) {
+        const dummy = generateSimByCost(1000, rollOutcomeCategory(), ['ru', 'ua', 'kz', 'ae', 'by']);
+        pushLive(dummy);
+      }
+
+      setInterval(() => {
+        const c = CASES[Math.floor(Math.random() * CASES.length)];
+        const sim = generateSimByCost(c.price, rollOutcomeCategory(), c.pool);
+        pushLive(sim);
+      }, 5500);
+
+      const splash = document.getElementById('splashScreen');
+      if (splash) {
+        splash.style.opacity = '0';
+        splash.style.pointerEvents = 'none';
+        setTimeout(() => splash.remove(), 350);
+      }
+
+      if (!SafeStorage.getItem('SIM_DROP_DEVICE_CHOSEN_V6')) {
+        toggleModal(document.getElementById('deviceModal'), true);
+        SafeStorage.setItem('SIM_DROP_DEVICE_CHOSEN_V6', '1');
+      }
+    }
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', initializeApplication);
+    } else {
+      initializeApplication();
+    }
+  </script>
+</body>
+</html>

@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>SIM DROP</title>
+  <title>SIM DROP — Блатные Номера</title>
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
@@ -481,10 +481,21 @@
 
     <!-- TAB 5: UPGRADER -->
     <div id="tab-upgrader" class="tab-pane hidden flex flex-col gap-4">
-      <div class="bg-[#1C211B] rounded-md3-xl p-4 sm:p-5 border border-[#43483E]/60 shadow-elevation-2 flex flex-col gap-5">
-        <div>
-          <h2 class="text-base sm:text-lg font-black text-white">⚡ Апгрейдер Номеров</h2>
-          <p class="text-[11px] text-[#C3C8BB]">Победа строго равна: стоимость номера × множитель (X × M)</p>
+      <div class="bg-[#1C211B] rounded-md3-xl p-4 sm:p-5 border border-[#43483E]/60 shadow-elevation-2 flex flex-col gap-4">
+        <div class="flex flex-wrap items-center justify-between gap-2 border-b border-[#43483E]/40 pb-3">
+          <div>
+            <h2 class="text-base sm:text-lg font-black text-white">⚡ Апгрейдер: Номера или Рубли</h2>
+            <p class="text-[11px] text-[#C3C8BB]">Умножайте номер из сейфа или ставьте рубли напрямую с баланса</p>
+          </div>
+          <!-- Mode Tabs -->
+          <div class="inline-flex p-1 bg-[#0B0F0A] rounded-md3-full border border-[#43483E]">
+            <button id="upgraderModeSimBtn" class="state-layer px-3 py-1 rounded-md3-full text-xs font-bold transition-all bg-[#9CD67D] text-[#0C3900] cursor-pointer">
+              📱 Номер из сейфа
+            </button>
+            <button id="upgraderModeCashBtn" class="state-layer px-3 py-1 rounded-md3-full text-xs font-bold transition-all text-[#C3C8BB] hover:text-white cursor-pointer">
+              💵 Рубли с баланса
+            </button>
+          </div>
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-5 items-center">
@@ -499,10 +510,34 @@
           </div>
 
           <div class="flex flex-col gap-3">
-            <span class="text-xs font-bold text-white uppercase tracking-wider">Жертвуемый номер:</span>
-            <div id="upgraderTargetSlot" class="state-layer p-3 rounded-md3-md bg-[#272B25] border border-[#43483E] flex items-center justify-between cursor-pointer hover:border-[#9CD67D]">
-              <span class="text-xs text-[#C3C8BB]">Нажмите, чтобы выбрать номер из сейфа</span>
-              <span class="text-xs text-[#9CD67D] font-bold">Выбрать ➔</span>
+            <!-- SIM MODE CONTAINER -->
+            <div id="upgraderSimSection" class="flex flex-col gap-2">
+              <span class="text-xs font-bold text-white uppercase tracking-wider">Жертвуемый номер:</span>
+              <div id="upgraderTargetSlot" class="state-layer p-3 rounded-md3-md bg-[#272B25] border border-[#43483E] flex items-center justify-between cursor-pointer hover:border-[#9CD67D]">
+                <span class="text-xs text-[#C3C8BB]">Нажмите, чтобы выбрать номер из сейфа</span>
+                <span class="text-xs text-[#9CD67D] font-bold">Выбрать ➔</span>
+              </div>
+            </div>
+
+            <!-- CASH MODE CONTAINER -->
+            <div id="upgraderCashSection" class="hidden flex flex-col gap-2.5">
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-bold text-white uppercase tracking-wider">Ставка с баланса:</span>
+                <span id="upgraderCashPotentialWin" class="text-[11px] font-mono font-bold text-[#9CD67D]">Выигрыш: 0 ₽</span>
+              </div>
+              <div class="relative">
+                <input id="upgraderCashInput" type="number" min="10" step="10" value="100" class="w-full bg-[#0B0F0A] border border-[#43483E] rounded-md3-md py-2.5 px-3 text-white font-mono text-sm font-bold focus:outline-none focus:border-[#9CD67D] pr-10">
+                <span class="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-bold text-[#9CD67D]">₽</span>
+              </div>
+              <div class="flex flex-wrap gap-1">
+                <button class="upgrader-cash-preset state-layer px-2 py-1 rounded-md3-sm bg-[#272B25] border border-[#43483E] text-[10px] font-mono font-bold text-[#C3C8BB] hover:text-white cursor-pointer" data-val="100">+100</button>
+                <button class="upgrader-cash-preset state-layer px-2 py-1 rounded-md3-sm bg-[#272B25] border border-[#43483E] text-[10px] font-mono font-bold text-[#C3C8BB] hover:text-white cursor-pointer" data-val="500">+500</button>
+                <button class="upgrader-cash-preset state-layer px-2 py-1 rounded-md3-sm bg-[#272B25] border border-[#43483E] text-[10px] font-mono font-bold text-[#C3C8BB] hover:text-white cursor-pointer" data-val="2500">+2.5K</button>
+                <button class="upgrader-cash-preset state-layer px-2 py-1 rounded-md3-sm bg-[#272B25] border border-[#43483E] text-[10px] font-mono font-bold text-[#C3C8BB] hover:text-white cursor-pointer" data-val="10000">+10K</button>
+                <button id="upgraderCashHalf" class="state-layer px-2 py-1 rounded-md3-sm bg-[#272B25] border border-[#43483E] text-[10px] font-mono font-bold text-[#FFE885] cursor-pointer">½</button>
+                <button id="upgraderCashDouble" class="state-layer px-2 py-1 rounded-md3-sm bg-[#272B25] border border-[#43483E] text-[10px] font-mono font-bold text-[#FFE885] cursor-pointer">2X</button>
+                <button id="upgraderCashMax" class="state-layer px-2 py-1 rounded-md3-sm bg-[#205107] border border-[#9CD67D] text-[10px] font-mono font-bold text-[#B7F397] cursor-pointer">МАКС</button>
+              </div>
             </div>
 
             <span class="text-xs font-bold text-white uppercase tracking-wider mt-1">Множитель:</span>
@@ -971,6 +1006,8 @@
       odometerCountry: 'ru',
       odometerMult: 1,
       contractSimIds: [],
+      upgraderSourceMode: 'sim', // 'sim' | 'cash'
+      upgraderCashAmount: 100,
       upgraderSimId: null,
       upgraderMultIdx: 1
     };
@@ -1678,6 +1715,56 @@
       document.getElementById('upgraderChanceLabel').textContent = `Шанс победы: ${opt.chance.toFixed(1)}% (${opt.mult}x)`;
       renderUpgraderWheel(opt.chance);
 
+      const simBtn = document.getElementById('upgraderModeSimBtn');
+      const cashBtn = document.getElementById('upgraderModeCashBtn');
+      const simSec = document.getElementById('upgraderSimSection');
+      const cashSec = document.getElementById('upgraderCashSection');
+      const startBtn = document.getElementById('startUpgradeBtn');
+
+      if (STATE.upgraderSourceMode === 'cash') {
+        cashBtn.className = 'state-layer px-3 py-1 rounded-md3-full text-xs font-bold transition-all bg-[#9CD67D] text-[#0C3900] cursor-pointer';
+        simBtn.className = 'state-layer px-3 py-1 rounded-md3-full text-xs font-bold transition-all text-[#C3C8BB] hover:text-white cursor-pointer';
+        simSec.classList.add('hidden');
+        cashSec.classList.remove('hidden');
+
+        const cashInput = document.getElementById('upgraderCashInput');
+        let currentCash = parseInt(cashInput.value) || 0;
+        const potentialWin = Math.round(currentCash * opt.mult);
+        document.getElementById('upgraderCashPotentialWin').textContent = `Выигрыш: ${potentialWin.toLocaleString('ru-RU')} ₽ (+${Math.max(0, potentialWin - currentCash).toLocaleString('ru-RU')} ₽)`;
+
+        const canBetCash = currentCash >= 10 && STATE.balance >= currentCash && !isUpgradeSpinning;
+        startBtn.disabled = !canBetCash;
+        startBtn.textContent = `Крутить Апгрейд (${currentCash.toLocaleString('ru-RU')} ₽ ➔ ${potentialWin.toLocaleString('ru-RU')} ₽)`;
+      } else {
+        simBtn.className = 'state-layer px-3 py-1 rounded-md3-full text-xs font-bold transition-all bg-[#9CD67D] text-[#0C3900] cursor-pointer';
+        cashBtn.className = 'state-layer px-3 py-1 rounded-md3-full text-xs font-bold transition-all text-[#C3C8BB] hover:text-white cursor-pointer';
+        simSec.classList.remove('hidden');
+        cashSec.classList.add('hidden');
+
+        const slot = document.getElementById('upgraderTargetSlot');
+        const targetSim = STATE.inventory.find(s => s.id === STATE.upgraderSimId);
+        if (targetSim) {
+          slot.className = `p-3 rounded-md3-md border flex items-center justify-between cursor-pointer ${targetSim.tier.css}`;
+          slot.innerHTML = `
+            <div>
+              <div class="font-bold text-xs text-white">${targetSim.flag} ${targetSim.formatted}</div>
+              <div class="text-[10px] text-[#C3C8BB]">${targetSim.tier.name}</div>
+            </div>
+            <div class="font-mono font-bold text-sm text-[#9CD67D]">${targetSim.price.toLocaleString('ru-RU')} ₽</div>
+          `;
+          startBtn.disabled = isUpgradeSpinning;
+          startBtn.textContent = `Крутить Апгрейд Номера (${Math.round(targetSim.price * opt.mult).toLocaleString('ru-RU')} ₽)`;
+        } else {
+          slot.className = 'state-layer p-3 rounded-md3-md bg-[#272B25] border border-[#43483E] flex items-center justify-between cursor-pointer hover:border-[#9CD67D]';
+          slot.innerHTML = `
+            <span class="text-xs text-[#C3C8BB]">Нажмите, чтобы выбрать номер из сейфа</span>
+            <span class="text-xs text-[#9CD67D] font-bold">Выбрать ➔</span>
+          `;
+          startBtn.disabled = true;
+          startBtn.textContent = 'Крутить Апгрейд';
+        }
+      }
+
       const row = document.getElementById('upgraderMultipliersRow');
       row.innerHTML = '';
       UPGRADE_CHANCES.forEach((o, i) => {
@@ -1694,50 +1781,91 @@
         };
         row.appendChild(btn);
       });
+    }
 
-      const slot = document.getElementById('upgraderTargetSlot');
-      const targetSim = STATE.inventory.find(s => s.id === STATE.upgraderSimId);
-      if (targetSim) {
-        slot.className = `p-3 rounded-md3-md border flex items-center justify-between cursor-pointer ${targetSim.tier.css}`;
-        slot.innerHTML = `
-          <div>
-            <div class="font-bold text-xs text-white">${targetSim.flag} ${targetSim.formatted}</div>
-            <div class="text-[10px] text-[#C3C8BB]">${targetSim.tier.name}</div>
-          </div>
-          <div class="font-mono font-bold text-sm text-[#9CD67D]">${targetSim.price.toLocaleString('ru-RU')} ₽</div>
-        `;
-        document.getElementById('startUpgradeBtn').disabled = false;
-      } else {
-        slot.className = 'state-layer p-3 rounded-md3-md bg-[#272B25] border border-[#43483E] flex items-center justify-between cursor-pointer hover:border-[#9CD67D]';
-        slot.innerHTML = `
-          <span class="text-xs text-[#C3C8BB]">Нажмите, чтобы выбрать номер из сейфа</span>
-          <span class="text-xs text-[#9CD67D] font-bold">Выбрать ➔</span>
-        `;
-        document.getElementById('startUpgradeBtn').disabled = true;
-      }
+    document.getElementById('upgraderModeSimBtn').onclick = () => {
+      if (isUpgradeSpinning) return;
+      STATE.upgraderSourceMode = 'sim';
+      syncUpgraderUI();
+    };
 
-      slot.onclick = () => {
+    document.getElementById('upgraderModeCashBtn').onclick = () => {
+      if (isUpgradeSpinning) return;
+      STATE.upgraderSourceMode = 'cash';
+      syncUpgraderUI();
+    };
+
+    const cashInputEl = document.getElementById('upgraderCashInput');
+    cashInputEl.addEventListener('input', () => {
+      syncUpgraderUI();
+    });
+
+    document.querySelectorAll('.upgrader-cash-preset').forEach(btn => {
+      btn.onclick = () => {
         if (isUpgradeSpinning) return;
-        if (STATE.inventory.length === 0) {
-          showToast('В сейфе нет номеров! Откройте кейс', 'info');
-          return;
-        }
-        const curIdx = STATE.inventory.findIndex(s => s.id === STATE.upgraderSimId);
-        const nextSim = STATE.inventory[(curIdx + 1) % STATE.inventory.length];
-        STATE.upgraderSimId = nextSim.id;
+        const add = parseInt(btn.dataset.val) || 0;
+        let cur = parseInt(cashInputEl.value) || 0;
+        cur = Math.min(STATE.balance, cur + add);
+        cashInputEl.value = Math.max(10, cur);
         syncUpgraderUI();
       };
-    }
+    });
+
+    document.getElementById('upgraderCashHalf').onclick = () => {
+      if (isUpgradeSpinning) return;
+      let cur = parseInt(cashInputEl.value) || 0;
+      cashInputEl.value = Math.max(10, Math.floor(cur / 2));
+      syncUpgraderUI();
+    };
+
+    document.getElementById('upgraderCashDouble').onclick = () => {
+      if (isUpgradeSpinning) return;
+      let cur = parseInt(cashInputEl.value) || 0;
+      cashInputEl.value = Math.min(STATE.balance, cur * 2);
+      syncUpgraderUI();
+    };
+
+    document.getElementById('upgraderCashMax').onclick = () => {
+      if (isUpgradeSpinning) return;
+      cashInputEl.value = Math.max(10, Math.floor(STATE.balance));
+      syncUpgraderUI();
+    };
+
+    document.getElementById('upgraderTargetSlot').onclick = () => {
+      if (isUpgradeSpinning) return;
+      if (STATE.inventory.length === 0) {
+        showToast('В сейфе нет номеров! Откройте кейс или переключитесь на рубли', 'info');
+        return;
+      }
+      const curIdx = STATE.inventory.findIndex(s => s.id === STATE.upgraderSimId);
+      const nextSim = STATE.inventory[(curIdx + 1) % STATE.inventory.length];
+      STATE.upgraderSimId = nextSim.id;
+      syncUpgraderUI();
+    };
 
     document.getElementById('startUpgradeBtn').onclick = () => {
       if (isUpgradeSpinning) return;
-      const sim = STATE.inventory.find(s => s.id === STATE.upgraderSimId);
-      if (!sim) return;
+      const opt = UPGRADE_CHANCES[STATE.upgraderMultIdx];
+      const isCash = STATE.upgraderSourceMode === 'cash';
+
+      let targetSim = null;
+      let cashBet = 0;
+
+      if (isCash) {
+        cashBet = parseInt(cashInputEl.value) || 0;
+        if (cashBet < 10) return showToast('Минимальная ставка — 10 ₽!', 'error');
+        if (STATE.balance < cashBet) return showToast('Недостаточно средств на балансе!', 'error');
+        STATE.balance -= cashBet;
+        updateUI();
+        saveState();
+      } else {
+        targetSim = STATE.inventory.find(s => s.id === STATE.upgraderSimId);
+        if (!targetSim) return showToast('Выберите номер из сейфа!', 'info');
+      }
 
       isUpgradeSpinning = true;
       document.getElementById('startUpgradeBtn').disabled = true;
 
-      const opt = UPGRADE_CHANCES[STATE.upgraderMultIdx];
       const roll = Math.random() * 100;
       const win = roll < opt.chance;
 
@@ -1788,24 +1916,42 @@
           upgraderAngle = targetAngle;
           renderUpgraderWheel(opt.chance);
 
-          STATE.inventory = STATE.inventory.filter(s => s.id !== sim.id);
-          STATE.upgraderSimId = null;
-
-          if (win) {
-            audio.playFanfare(5);
-            spawnBurst(70);
-            
-            // СТРОГО: цена жертвы * выбранный множитель!
-            const exactWonPrice = Math.round(sim.price * opt.mult);
-            const wonSim = generateSimByCost(exactWonPrice, 'profit', [sim.countryId]);
-            wonSim.price = exactWonPrice;
-
-            pushLive(wonSim);
-            showDropModal(wonSim);
+          if (isCash) {
+            if (win) {
+              const wonCash = Math.round(cashBet * opt.mult);
+              STATE.balance += wonCash;
+              audio.playFanfare(5);
+              spawnBurst(65);
+              showToast(`Победа! Вы выиграли +${wonCash.toLocaleString('ru-RU')} ₽ (${opt.mult}x)!`, 'success');
+              pushLive({
+                formatted: `+${wonCash.toLocaleString('ru-RU')} ₽ (Апгрейд ${opt.mult}x)`,
+                price: wonCash,
+                flag: '💵',
+                tier: RARITY.gold
+              });
+            } else {
+              audio.playFail();
+              showToast(`Апгрейд не удался! -${cashBet.toLocaleString('ru-RU')} ₽ 🔥`, 'error');
+            }
           } else {
-            audio.playFail();
-            showToast(`Апгрейд не удался! Номер ${sim.formatted} сгорел 🔥`, 'error');
+            STATE.inventory = STATE.inventory.filter(s => s.id !== targetSim.id);
+            STATE.upgraderSimId = null;
+
+            if (win) {
+              audio.playFanfare(5);
+              spawnBurst(70);
+              const exactWonPrice = Math.round(targetSim.price * opt.mult);
+              const wonSim = generateSimByCost(exactWonPrice, 'profit', [targetSim.countryId]);
+              wonSim.price = exactWonPrice;
+
+              pushLive(wonSim);
+              showDropModal(wonSim);
+            } else {
+              audio.playFail();
+              showToast(`Апгрейд не удался! Номер ${targetSim.formatted} сгорел 🔥`, 'error');
+            }
           }
+
           syncUpgraderUI();
           updateUI();
           saveState();
